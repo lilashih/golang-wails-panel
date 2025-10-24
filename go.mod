@@ -3,6 +3,7 @@ module gbase
 go 1.23.0
 
 require (
+	fyne.io/systray v1.11.0
 	github.com/caarlos0/env/v6 v6.10.1
 	github.com/golobby/dotenv v1.3.2
 	github.com/wailsapp/wails/v2 v2.10.2

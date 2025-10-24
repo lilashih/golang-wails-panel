@@ -4,8 +4,8 @@
       <div class="truncate w-1/3">{{ item.Config.title }}</div>
       <div class="flex justify-end items-center gap-4 w-2/3">
         <div
-          class="text-sm text-left"
-          :class="item.running ? 'text-green-200' : 'text-gray-400'"
+          class="status"
+          :class="item.running ? 'running' : 'stopped'"
         >
           {{ item.running ? '啟動中' : '已停止' }}
         </div>
@@ -103,3 +103,17 @@ async function installProject(index) {
 
 onMounted(load)
 </script>
+
+<style scoped>
+@reference "@/src/css/style.css";
+
+.status {
+  @apply text-xs px-1 py-0.5 rounded border
+}
+.running {
+  @apply text-teal-400 border-green-700
+}
+.stopped {
+  @apply text-gray-400 border-gray-600
+}
+</style>

@@ -3,7 +3,7 @@
     <!-- Toolbar -->
     <div class="p-2 space-y-2">
       <div class="flex items-center gap-2">
-        <button class="px-3 py-1.5 rounded-md border border-stone-600 bg-stone-700/60 text-stone-100 text-sm hover:bg-stone-700"
+        <button class="px-3 py-1.5 cursor-pointer rounded-md border border-stone-600 bg-stone-700/60 text-stone-100 text-sm hover:bg-stone-700"
                 @click="openFile">
           開啟檔案
         </button>
@@ -24,19 +24,16 @@
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <input class="px-3 py-1.5 rounded-md border border-stone-700 bg-stone-900 text-stone-100 text-sm min-w-[12rem] flex-1"
-               v-model="search" placeholder="搜尋..." />
-        <input class="px-3 py-1.5 rounded-md border border-stone-700 bg-stone-900 text-stone-100 text-sm min-w-[12rem] flex-1"
-               v-model="filter" placeholder="篩選..." />
-        <input class="px-3 py-1.5 rounded-md border border-stone-700 bg-stone-900 text-stone-100 text-sm min-w-[12rem] flex-1"
-               v-model="highlight" placeholder="標記..." />
+        <input v-model="search" placeholder="搜尋..." />
+        <input v-model="filter" placeholder="篩選..." />
+        <input v-model="highlight" placeholder="標記..." />
 
         <div class="ml-auto flex items-center gap-2">
-          <button class="px-3 py-1.5 rounded-md border border-stone-600 text-stone-100 text-sm hover:bg-stone-700/50 disabled:opacity-50"
+          <button class="cursor-pointer px-3 py-1.5 rounded-md border border-stone-600 text-stone-100 text-sm hover:bg-stone-700/50 disabled:opacity-50"
                   @click="loadMore" :disabled="loading || atFileEnd || !filename">
             載入更多
           </button>
-          <button class="px-3 py-1.5 rounded-md border border-stone-600 text-stone-100 text-sm hover:bg-stone-700/50"
+          <button class="cursor-pointer px-3 py-1.5 rounded-md border border-stone-600 text-stone-100 text-sm hover:bg-stone-700/50"
                   @click="scrollBottom">
             跳至底部
           </button>
@@ -245,3 +242,11 @@ function scrollBottom() {
   el.scrollTop = el.scrollHeight
 }
 </script>
+
+<style scoped>
+@reference "@/src/css/style.css";
+
+input {
+  @apply px-3 py-1.5 rounded-md border border-stone-700 bg-stone-900 text-stone-100 text-sm min-w-[12rem] flex-1;
+}
+</style>

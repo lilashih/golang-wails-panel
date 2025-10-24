@@ -1,5 +1,7 @@
-build/bin
+release/bin
+release/storage
 node_modules
 frontend/dist
+/tmp
 *.exe~
 .env
