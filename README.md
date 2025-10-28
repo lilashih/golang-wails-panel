@@ -1,10 +1,9 @@
 # golang-wails-panel
 
-
 ## ▍主要功能
 這個專案是一個桌面應用程式，主要提供兩大功能：
 
-1. 啟動面板（Project Panel）
+1. 啟動面板 (Project Panel)
 可將多個專案放在 [projects](release/projects/) 目錄下，程式會自動讀取該目錄底下的所有專案，並依照每個專案資料夾內的 `project.json` 設定檔來顯示專案資訊與操作按鈕，使用者可以直接在面板上執行啟動、停止、安裝等操作，方便管理多個專案。
 
 `project.json` 是每個專案資料夾下的設定檔，用來描述專案的基本資訊與操作指令，主要欄位說明如下：
@@ -45,11 +44,10 @@
 > 不同 type 會對應不同的啟動、停止、安裝方式，讓面板能自動適應各種專案型態，並提供一鍵操作。
 
 2. Log 檢視器
-可自動讀取 [log](storage/log/) 目錄下的所有日誌檔案，並支援選擇其他額外檔案。即使是內容非常龐大的檔案，也能流暢閱讀與檢索，方便進行日誌分析與除錯。
+可自動讀取 `storage/log/` 目錄下的所有日誌檔案，並支援選擇其他額外檔案。即使是內容非常龐大的檔案，也能流暢閱讀與檢索，方便進行日誌分析與除錯。
 
 3. 系統托盤（Systray）
 支援最小化至系統托盤並在背景常駐，提供快速操作選單（如顯示/隱藏視窗、開啟日誌資料夾、結束程式等），方便在不占用工作列的情況下管理應用程式。
-
 
 ## ▍目錄架構
 ```
@@ -71,6 +69,24 @@
 │   └── log/                # 系統 log 檔案
 ```
 
+## ▍套件
+| 套件 | 簡短說明 |
+|---|---|
+| [wails](https://github.com/wailsapp/wails) | Wails 桌面應用框架 (v2版)。 |
+| [fyne.io/systray](https://github.com/fyne-io/systray) | 建立系統托盤。 |
+| [caarlos0/env](https://github.com/caarlos0/env) | 解析環境變數到結構體。 |
+| [golobby/dotenv](https://github.com/golobby/dotenv) | 載入 `.env` 檔案設定。 |
+| [lumberjack](https://github.com/natefinch/lumberjack) | 日誌檔案自動輪替 (log rotation)工具 。 |
+
+
+### 常用環境變數 (.env)
+
+| 名稱 | 用途 | 預設值（正式環境） | 備註 |
+|---|---|---|---|
+| `APP_MODE` | 執行模式 (`release` / `debug` / `test`) | `release` | 正式環境請使用 `release` |
+| `PROJECT_BASE_PATH` | 要掃描的專案目錄 | `./` | 開發環境通常為 `./release` |
+
+
 ## ▍開發指令
 
 ### 安裝
@@ -87,15 +103,48 @@ wails dev
 ```
 
 ### 打包
-編譯專案為可執行檔：
 ```bash
 wails build
 ```
 
+
+
+### ▍系統日誌
+如果只是想把 `log` 訊息寫入檔案，就用 `logger.Log`，如果想讓前端顯示就用 `runtime`。
+
+| Logger | 行為 |
+| ----------- | ------------------------------------------------------------ |
+| logger.Log | `release` 模式僅寫入檔案，其餘模式同時輸出 `console`。 |
+| runtime | 透過 `Wails` 的 `Logger Adapter` 改寫原有的 `Logger`，除了執行自定義的 `logger.Log` 外，還會透過 `runtime.EventsEmit` 將日誌事件即時傳送至前端。 |
+
+
+ ```
+ import (
+    "gbase/src/core/logger"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
+ )
+
+ // 寫入一般 log
+ logger.Log.Println("Server started")
+
+ // wails 的 log，可顯示至前端 (需有 ctx)
+ runtime.LogErrorf(s.ctx, "Server started")
+ ```
+
+ - 檔案路徑：`storage/log`，若目錄不存在會自動建立。
+ - 檔名格式：`log-YYYY-MM-DD.log`。
+ - 特性：
+    - 使用 `lumberjack` 做檔案控管，寫入前自動監測系統日期，跨日就自動換檔。
+    - 移除 `ANSI` 顏色控制碼，確保內容為純文字。
+    - 可於 `src/core/logger` 自訂格式、輸出與輪替策略。
+ - Wails 與前端日誌事件：
+    - [wails.go](`src/core/logger/wails.go`) 裡定義了 `RegisterCtx` 與 `NewWailsLog()`，後端在啟動時會把這個 `adapter` 註冊給 `Wails`
+    - `adapter` 會把每筆 `log` 送給 `logger.Log`，並觸發 `event` (`runtime.EventsEmit`) 給前端，讓前端可用來即時顯示 `log`。
+
 ## ▍其他說明
 
 ### projects
-若你在 `projects` 目錄下開發 Go 專案，建議將 build 或 release 目錄以「捷徑」方式同步到 `projects` 目錄下，方便啟動面板自動載入。
+若你在 `projects` 目錄下開發 Go 專案，建議將該 Go 專案打包後的目錄以「捷徑」方式同步到 `projects` 目錄下，方便啟動面板自動載入。
 
 > ⚠️ 請務必使用指令建立資料夾捷徑（不可用右鍵產生超連結），僅建議於本機開發時使用，正式部署請勿保留捷徑。
 

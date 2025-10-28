@@ -2,7 +2,7 @@
 
 This document describes the `frontend` directory, including project structure, main features, used packages, and how to install and start the project.
 
-## Directory Structure
+## ▍Directory Structure
 
 ```
 frontend/
@@ -28,19 +28,19 @@ frontend/
 │   └── runtime/              # Wails API
 ```
 
-## Main Features
+## ▍Features
 - Uses Vue 3 as the frontend framework
 - Uses Vite for development and build
 - Tailwind CSS for rapid UI design
 - Interacts with the Wails backend
 
-## Main Packages Used
+## ▍Packages
 - [Vue 3](https://vuejs.org/)
 - [Vite](https://vitejs.dev/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Wails](https://wails.io/)
 
-## Installation & Startup
+## ▍Installation & Startup
 You can run these commands in the frontend directory, or simply run `wails dev` in the project root.
 
 1. Enter the frontend directory:

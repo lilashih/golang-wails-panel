@@ -2,7 +2,7 @@
 
 本文件為 `frontend` 目錄的說明，包含專案結構、主要功能、使用到的套件與安裝啟動方式。
 
-## 目錄結構
+## ▍目錄結構
 
 ```
 frontend/
@@ -28,19 +28,20 @@ frontend/
 │   └── runtime/              # Wails API
 ```
 
-## 主要功能
+## ▍主要功能
 - 使用 Vue 3 作為前端框架
 - 使用 Vite 作為開發與建構工具
 - Tailwind CSS 快速設計 UI
 - 與 Wails 後端進行互動
 
-## 使用到的主要套件
+## ▍使用到的主要套件
 - [Vue 3](https://vuejs.org/)
 - [Vite](https://vitejs.dev/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Wails](https://wails.io/)
 
-## 安裝與啟動
+
+## ▍安裝與啟動
 可在 frontend 目錄執行，或直接在專案目錄執行 wails dev
 1. 進入 frontend 目錄：
     ```bash
