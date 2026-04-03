@@ -1,3 +1,4 @@
+/.gocache
 release/bin
 release/storage
 node_modules
