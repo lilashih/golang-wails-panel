@@ -27,7 +27,6 @@ var icon []byte
 var (
 	ctx      context.Context // Wails 的 context（給 runtime.* 用）
 	ctxReady = make(chan struct{})
-	hidden   = false // 追蹤視窗是否已被隱藏
 )
 
 //───────────────────────────────────────────────────────────

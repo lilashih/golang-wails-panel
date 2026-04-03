@@ -1,52 +1,53 @@
 # golang-wails-panel
 
 ## ▍Features
-This project is a desktop application with two main features:
+This project is a desktop application with the following features:
 
-### 1. Project Panel
-You can place multiple projects under the [projects](release/projects/) directory. The application will automatically scan all projects in this directory and display them in the panel based on each project's `project.json` configuration file. Users can start, stop, or install each project directly from the panel for easy management.
+1. Project Panel  
+    You can place multiple projects under the [projects](release/projects/) directory. The application will automatically scan all projects in this directory and display them in the panel based on each project's `project.json` configuration file. Users can start, stop, or install each project directly from the panel for easy management.
 
-#### `project.json` Example
+    `project.json` Example    
+    
+        | Field   | Description |
+        |---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+        | title   | Project name, shown in the panel. |
+        | type    | Project type, supports two types:<br>• pm2: For Node.js or similar projects managed by pm2. Commands are usually pnpm/yarn/npm scripts.<br>• exe: For Windows executables (.exe). start/stop are Windows commands. |
+        | key     | Unique project identifier, usually for internal use. |
+        | start   | Command to start the project. |
+        | stop    | Command to stop the project. |
+        | install | Command to install or initialize the project (optional). |
 
-**`pm2` Project Example:**
-```json
-{
-  "title": "Nodejs Project Example",
-  "type": "pm2",
-  "key": "pm2 process name",
-  "start": "pnpm start",
-  "stop": "pnpm stop",
-  "install": "pnpm install"
-}
-```
 
-**`exe` Project Example:**
-```json
-{
-  "title": "Go Project Example",
-  "type": "exe",
-  "key": "process name, usually the executable filename",
-  "start": "start /b app.exe",
-  "stop": "taskkill /IM app.exe /F",
-  "install": ""
-}
-```
+        > The panel adapts to different project types and provides one-click operations for each.
 
-| Field   | Description |
-|---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| title   | Project name, shown in the panel. |
-| type    | Project type, supports two types:<br>• pm2: For Node.js or similar projects managed by pm2. Commands are usually pnpm/yarn/npm scripts.<br>• exe: For Windows executables (.exe). start/stop are Windows commands. |
-| key     | Unique project identifier, usually for internal use. |
-| start   | Command to start the project. |
-| stop    | Command to stop the project. |
-| install | Command to install or initialize the project (optional). |
+    - **`pm2` Project Example:**
+        ```json
+        {
+        "title": "Nodejs Project Example",
+        "type": "pm2",
+        "key": "pm2 process name",
+        "start": "pnpm start",
+        "stop": "pnpm stop",
+        "install": "pnpm install"
+        }
+        ```
 
-> The panel adapts to different project types and provides one-click operations for each.
+    - **`exe` Project Example:**
+        ```json
+        {
+        "title": "Go Project Example",
+        "type": "exe",
+        "key": "process name, usually the executable filename",
+        "start": "start /b app.exe",
+        "stop": "taskkill /IM app.exe /F",
+        "install": ""
+        }
+        ```
 
-### 2. Log Viewer
+2. Log Viewer
 Automatically scans all log files under the [log](storage/log/) directory. You can also select additional files to view. The viewer supports reading and searching very large files efficiently, making log analysis and debugging easier.
 
-### 3. System Tray (Systray)
+3. System Tray (Systray)
 Supports minimizing to the system tray and running in the background, with a quick action menu (e.g., show/hide window, open logs folder, quit the app) so you can manage the application without occupying the taskbar.
 
 ---
@@ -65,42 +66,96 @@ Supports minimizing to the system tray and running in the background, with a qui
 │   ├── def/                # Definitions
 │   └── service/            # Services (log_viewer, panel, etc.)
 ├── release/                # Release resources
-│   ├── bin/                # Compiled Go executables
+│   ├── golang-wails-panel.exe  # Compiled Go executable
 │   └── projects/           # Projects directory
 ├── storage/                # Data storage
-│   └── log/                # System log files
+│   └── log/                # Local storage (log/, etc.)
 ```
+
+## ▍Environment Variables
+All configuration is located in [src/core/config](/src/core/config) and initialized automatically by [src/core/config/main.go](/src/core/config/main.go), which also loads `.env`.
+
+- Example:
+    ```go
+    import (
+        "fmt"
+        "gbase/src/core/config"
+    )
+
+    fmt.Println(config.App.Name)
+    ```
+
+### Common Environment Variables (.env)
+
+| Name | Purpose | Default Value (Production) | Notes |
+|---|---|---|---|
+| `APP_MODE` | Runtime mode (`release` / `debug` / `test`) | `release` | Use `release` in production |
+| `PROJECT_BASE_PATH` | Project directory to scan | `./projects` | Set the directory to scan directly. Both relative and absolute paths are supported, such as `./release/projects` or `C:\myDir\projects` |
+
+## ▍Logging
+If you only want to write log messages to files, use `logger.Log`. If you want logs to be displayed in the frontend as well, use `runtime`.
+
+| Logger | Behavior |
+| ----------- | ------------------------------------------------------------ |
+| `logger.Log` | In `release` mode, logs are written to files only. In other modes, logs are also output to the console. |
+| `runtime` | Uses the Wails Logger Adapter to wrap the existing logger. In addition to executing the custom `logger.Log`, it also sends log events to the frontend in real time through `runtime.EventsEmit`. |
+
+- Generated log path: the application automatically creates the `log` directory under `storage` in the project root (default: `./storage/log`).
+- Filename format: `log-YYYY-MM-DD.log`. New log file generated daily (with `UTF-8 BOM`).
+- Characteristics:
+    - Uses `lumberjack` for file management, checks the system date before writing, and rotates automatically when the day changes.
+    - Removes `ANSI` color escape codes to keep the log content as plain text.
+    - `logger.Log` is actually a wrapper around `*log.Logger` from the Go standard library, so you can use standard `log` methods and behavior directly:
+        - `Print/Printf/Println`, `Fatal/Fatalf`, `Panic/Panicf`, and similar methods are available.
+        - The default flags are `log.LstdFlags | log.Lshortfile`, which include timestamps and the caller file:line.
+    - If you need to change the format or add a log rotate strategy, you can modify it directly in [src/core/logger](/src/core/logger).
+- Wails and frontend log events:  
+    - [wails.go](src/core/logger/wails.go) defines `RegisterCtx` and `NewWailsLog()`. The backend registers this adapter with Wails during startup.
+    - The adapter forwards each log entry to `logger.Log` and also emits an event through `runtime.EventsEmit` so the frontend can display logs in real time.
+- Example:
+    ```go
+    import (
+        "gbase/src/core/logger"
+        "github.com/wailsapp/wails/v2/pkg/runtime"
+    )
+
+    // Write a regular log
+    logger.Log.Println("Server started")
+
+    // Wails log, can be displayed in the frontend (requires ctx)
+    runtime.LogErrorf(s.ctx, "Server started")
+    ```
 
 ## ▍Development Commands
 
-### Installation
-Install Wails CLI and tidy Go dependencies:
-```bash
-go install github.com/wailsapp/wails/v2/cmd/wails@latest
-go mod tidy
-```
+- Installation  
+    Install `Wails CLI` and tidy `Go` dependencies:
+    ```bash
+    go install github.com/wailsapp/wails/v2/cmd/wails@latest
+    go mod tidy
+    ```
 
-### Run
-Start development mode (auto-reloads on code changes):
-```bash
-wails dev
-```
+- Run  
+    Start development mode (auto-reloads on code changes):
+    ```bash
+    wails dev
+    ```
 
-### Build
-Compile the project into an executable:
-```bash
-wails build
-```
+- Build  
+    Compile the project into an executable:
+    ```bash
+    wails build
+    ```
 
 ## ▍Additional Notes
 
-### projects (For Development Only)
-If you are developing a Go project under the `projects` directory, you can create a shortcut (symlink) to the build or release directory for easier access in the panel. 
+- projects (For Development Only)
+    If you are developing a Go project under the `projects` directory, you can create a shortcut (symlink) to the build or release directory for easier access in the panel. 
 
-> ⚠️ Please use the command line to create symlinks (do not use right-click shortcuts). Only use this during development; do not keep symlinks in production.**
+    > ⚠️ Please use the command line to create symlinks (do not use right-click shortcuts). Only use this during development; do not keep symlinks in production.**
 
-Example command to create a directory symlink (run in `projects` directory):
-```cmd
-mklink /D your_link target_folder
-mklink /D aaa path1\path2\release
-```
+    Example command to create a directory symlink (run in `projects` directory):
+    ```cmd
+    mklink /D your_link target_folder
+    mklink /D aaa path1\path2\release
+    ```

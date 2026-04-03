@@ -17,7 +17,7 @@ func NewPm2(config ProjectConfig, path string) *Project {
 	}
 	p.Start = func() error {
 		err := cmd.Run("cmd", []string{p.Config.Start}, p.Path)
-		p.CheckRunning()
+		waitForRunningState(p, true)
 
 		if !p.Running {
 			err = fmt.Errorf("未知錯誤 (請檢查.env檔或相關設定)")
@@ -27,7 +27,7 @@ func NewPm2(config ProjectConfig, path string) *Project {
 	}
 	p.Stop = func() error {
 		err := cmd.Run("cmd", []string{p.Config.Stop}, p.Path)
-		p.CheckRunning()
+		waitForRunningState(p, false)
 
 		if p.Running {
 			err = fmt.Errorf("未知錯誤 (請檢查.env檔或相關設定)")
@@ -36,7 +36,7 @@ func NewPm2(config ProjectConfig, path string) *Project {
 		return err
 	}
 	p.CheckRunning = func() {
-		online, err := core.IsServiceOnline(p.Config.Key)
+		online, err := core.IsServiceOnline(p.Config.Key, p.Path)
 		if err != nil {
 			logger.Log.Printf("檢查 pm2 服務 %s 是否啟用失敗：%v", p.Config.Title, err)
 		}

@@ -8,6 +8,8 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
+	"time"
 )
 
 type Project struct {
@@ -99,7 +101,13 @@ func readProjectDir(elem ...string) (string, []fs.DirEntry, error) {
 		return "", entries, errors.New(message)
 	}
 
-	path := filepath.Join(append([]string{basePath, config.Project.BasePath, "projects"}, elem...)...)
+	path, err := resolveProjectDir(basePath, elem...)
+	if err != nil {
+		message := "解析 projects 目錄路徑失敗"
+		logger.Log.Printf("%s：%v", message, err)
+		return "", entries, errors.New(message)
+	}
+
 	entries, err = os.ReadDir(path)
 	if err != nil {
 		message := "讀取 projects 目錄失敗"
@@ -108,4 +116,44 @@ func readProjectDir(elem ...string) (string, []fs.DirEntry, error) {
 	}
 
 	return path, entries, nil
+}
+
+// 解析絕對路徑、相對路徑，直接使用 PROJECT_BASE_PATH 指定的目錄
+func resolveProjectDir(basePath string, elem ...string) (string, error) {
+	cfgBase := strings.TrimSpace(strings.Trim(config.Project.BasePath, "\"")) // 移掉前後空白、雙引號
+	if cfgBase == "" {
+		cfgBase = "."
+	}
+
+	if !filepath.IsAbs(cfgBase) {
+		cfgBase = filepath.Join(basePath, cfgBase)
+	}
+
+	cfgBase = filepath.Clean(cfgBase)
+	path := filepath.Join(append([]string{cfgBase}, elem...)...)
+
+	info, err := os.Stat(path)
+	if err != nil {
+		return "", err
+	}
+
+	if !info.IsDir() {
+		return "", errors.New("設定的 PROJECT_BASE_PATH 不是資料夾")
+	}
+
+	return path, nil
+}
+
+// 啟動或停止時不馬上檢查狀態，等待3秒後再查詢
+func waitForRunningState(p *Project, expected bool) {
+	deadline := time.Now().Add(3 * time.Second)
+
+	for {
+		p.CheckRunning()
+		if p.Running == expected || time.Now().After(deadline) {
+			return
+		}
+
+		time.Sleep(250 * time.Millisecond)
+	}
 }
