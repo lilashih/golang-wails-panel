@@ -24,9 +24,9 @@ This project is a desktop application with the following features:
             "title": "Nodejs Project Example",
             "type": "pm2",
             "key": "pm2 process name",
-            "start": "pnpm start",
-            "stop": "pnpm stop",
-            "install": "pnpm install"
+            "start": "pnpm start",        // or npm start (must be defined in package.json)
+            "stop": "pnpm stop",          // or npm stop (must be defined in package.json)
+            "install": "pnpm install"     // or npm install
         }
         ```
 
@@ -38,7 +38,7 @@ This project is a desktop application with the following features:
             "key": "process name, usually the executable filename",
             "start": "start /b app.exe",
             "stop": "taskkill /IM app.exe /F",
-            "install": ""
+            "install": ""   // leave blank if installation is not required
         }
         ```
 
@@ -52,22 +52,22 @@ Supports minimizing to the system tray and running in the background, with a qui
 
 ## ▍Directory Structure
 ```
-├── app.go                  # Go main entry point
+├── app.go                      # Go main entry point
 ├── go.mod
 ├── go.sum
-├── main.go                 # Go main entry point
-├── wails.json              # Wails config
-├── README.md               # Project documentation
-├── frontend/               # Frontend code (see frontend/README.md for details)
-├── src/                    # Backend Go code
-│   ├── core/               # Core features (cmd, config, helper, logger, pm2)
-│   ├── def/                # Definitions
-│   └── service/            # Services (log_viewer, panel, etc.)
-├── release/                # Release resources
+├── main.go                     # Go main entry point
+├── wails.json                  # Wails config
+├── README.md                   # Project documentation
+├── frontend/                   # Frontend code (see frontend/README.md for details)
+├── src/                        # Backend Go code
+│   ├── core/                   # Core features (cmd, config, helper, logger, pm2)
+│   ├── def/                    # Definitions
+│   └── service/                # Services (log_viewer, panel, etc.)
+├── release/                    # Release resources
 │   ├── golang-wails-panel.exe  # Compiled Go executable
-│   └── projects/           # Projects directory
-├── storage/                # Data storage
-│   └── log/                # Local storage (log/, etc.)
+│   └── projects/               # Projects directory
+├── storage/                    # Data storage
+│   └── log/                    # Local storage (log/, etc.)
 ```
 
 ## ▍Environment Variables
