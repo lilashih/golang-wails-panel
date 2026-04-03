@@ -6,19 +6,17 @@ This project is a desktop application with the following features:
 1. Project Panel  
     You can place multiple projects under the [projects](release/projects/) directory. The application will automatically scan all projects in this directory and display them in the panel based on each project's `project.json` configuration file. Users can start, stop, or install each project directly from the panel for easy management.
 
-    `project.json` Example    
-    
-        | Field   | Description |
-        |---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-        | title   | Project name, shown in the panel. |
-        | type    | Project type, supports two types:<br>• pm2: For Node.js or similar projects managed by pm2. Commands are usually pnpm/yarn/npm scripts.<br>• exe: For Windows executables (.exe). start/stop are Windows commands. |
-        | key     | Unique project identifier, usually for internal use. |
-        | start   | Command to start the project. |
-        | stop    | Command to stop the project. |
-        | install | Command to install or initialize the project (optional). |
+    | Field   | Description |
+    |---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+    | title   | Project name, shown in the panel. |
+    | type    | Project type, supports two types:<br>• pm2: For Node.js or similar projects managed by pm2. Commands are usually pnpm/yarn/npm scripts.<br>• exe: For Windows executables (.exe). start/stop are Windows commands. |
+    | key     | Unique project identifier, usually for internal use. |
+    | start   | Command to start the project. |
+    | stop    | Command to stop the project. |
+    | install | Command to install or initialize the project (optional). |
 
 
-        > The panel adapts to different project types and provides one-click operations for each.
+    > The panel adapts to different project types and provides one-click operations for each.
 
     - **`pm2` Project Example:**
         ```json
