@@ -21,24 +21,24 @@ This project is a desktop application with the following features:
     - **`pm2` Project Example:**
         ```json
         {
-        "title": "Nodejs Project Example",
-        "type": "pm2",
-        "key": "pm2 process name",
-        "start": "pnpm start",
-        "stop": "pnpm stop",
-        "install": "pnpm install"
+            "title": "Nodejs Project Example",
+            "type": "pm2",
+            "key": "pm2 process name",
+            "start": "pnpm start",
+            "stop": "pnpm stop",
+            "install": "pnpm install"
         }
         ```
 
     - **`exe` Project Example:**
         ```json
         {
-        "title": "Go Project Example",
-        "type": "exe",
-        "key": "process name, usually the executable filename",
-        "start": "start /b app.exe",
-        "stop": "taskkill /IM app.exe /F",
-        "install": ""
+            "title": "Go Project Example",
+            "type": "exe",
+            "key": "process name, usually the executable filename",
+            "start": "start /b app.exe",
+            "stop": "taskkill /IM app.exe /F",
+            "install": ""
         }
         ```
 
