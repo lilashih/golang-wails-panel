@@ -1,13 +1,16 @@
 package logger
 
 import (
+	"compress/gzip"
 	"io"
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync/atomic"
 	"time"
 
+	"gbase/src/core/config"
 	"gbase/src/core/helper"
 	"gbase/src/def"
 
@@ -39,6 +42,12 @@ type dailyWriter struct {
 }
 
 func newDailyWriter() io.Writer {
+	if isCompressEnabled() {
+		today := time.Now().Format(def.YYYY_MM_DD)
+		dir, _ := helper.GetStorageDirOrCreate("log")
+		compressOldLogs(dir, filepath.Join(dir, "log-"+today+".log"))
+	}
+
 	w := &dailyWriter{}
 	w.rotate() // 啟動時先建今天的檔案
 	return w
@@ -71,7 +80,7 @@ func (w *dailyWriter) rotate() {
 		MaxSize:    100, // 每個檔案上限 100 MB，再大就額外切一支
 		MaxBackups: 30,  // 最多保留 30 支歷史檔
 		MaxAge:     30,  // 超過 30 天自動刪
-		Compress:   false,
+		Compress:   isCompressEnabled(),
 	}
 	w.date.Store(today)
 }
@@ -80,4 +89,88 @@ func GetLogDir() string {
 	dir, _ := helper.GetStorageDirOrCreate("log")
 
 	return dir
+}
+
+func isCompressEnabled() bool {
+	return strings.EqualFold(strings.TrimSpace(config.Logger.Compress), "true")
+}
+
+func compressOldLogs(dir, current string) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return
+	}
+
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+
+		path := filepath.Join(dir, entry.Name())
+		if path == current || filepath.Ext(path) != ".log" {
+			continue
+		}
+
+		if err = compressLogFile(path); err != nil {
+			log.Printf("compress log failed: %s, err=%v", path, err)
+		}
+	}
+}
+
+func compressLogFile(path string) error {
+	src, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+
+	info, err := src.Stat()
+	if err != nil {
+		_ = src.Close()
+		return err
+	}
+
+	gzPath := path + ".gz"
+	dst, err := os.Create(gzPath)
+	if err != nil {
+		return err
+	}
+
+	ok := false
+	defer func() {
+		dst.Close()
+		if !ok {
+			_ = os.Remove(gzPath)
+		}
+	}()
+
+	gz := gzip.NewWriter(dst)
+	gz.Name = filepath.Base(path)
+	gz.ModTime = info.ModTime()
+
+	if _, err = io.Copy(gz, src); err != nil {
+		_ = src.Close()
+		_ = gz.Close()
+		return err
+	}
+	if err = gz.Close(); err != nil {
+		_ = src.Close()
+		return err
+	}
+	if err = dst.Close(); err != nil {
+		_ = src.Close()
+		return err
+	}
+	if err = os.Chtimes(gzPath, info.ModTime(), info.ModTime()); err != nil {
+		_ = src.Close()
+		return err
+	}
+	if err = src.Close(); err != nil {
+		return err
+	}
+	if err = os.Remove(path); err != nil {
+		return err
+	}
+
+	ok = true
+	return nil
 }

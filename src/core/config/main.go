@@ -10,20 +10,22 @@ import (
 
 var App AppConfig
 var Project ProjectConfig
+var Logger LoggerConfig
 
 type configs struct {
 	*AppConfig
 	*ProjectConfig
+	*LoggerConfig
 }
 
 func init() {
 	envFile := ".env"
 
-	set(nil, &configs{&App, &Project}) // load default value first
+	set(nil, &configs{&App, &Project, &Logger}) // load default value first
 
 	// It should still work even if the .env file does not exist
 	if file, err := os.Open(envFile); err == nil {
-		set(file, &configs{&App, &Project})
+		set(file, &configs{&App, &Project, &Logger})
 		defer file.Close()
 	}
 }
