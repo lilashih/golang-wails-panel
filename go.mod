@@ -8,7 +8,6 @@ require (
 	github.com/golobby/dotenv v1.3.2
 	github.com/wailsapp/wails/v2 v2.11.0
 	golang.org/x/sys v0.30.0
-	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
 
 require (

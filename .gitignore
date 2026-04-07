@@ -4,5 +4,6 @@ release/storage
 node_modules
 frontend/dist
 /tmp
+/.tmp
 *.exe~
 .env

@@ -29,10 +29,10 @@ frontend/
 ```
 
 ## ▍Features
-- Uses Vue 3 as the frontend framework
-- Uses Vite for development and build
-- Tailwind CSS for rapid UI design
-- Interacts with the Wails backend
+- Uses `Vue 3` as the frontend framework
+- Uses `Vite` for development and build
+- `Tailwind CSS` for rapid UI design
+- Interacts with the `Wails` backend
 
 ## ▍Packages
 - [Vue 3](https://vuejs.org/)
@@ -41,7 +41,7 @@ frontend/
 - [Wails](https://wails.io/)
 
 ## ▍Installation & Startup
-You can run these commands in the frontend directory, or simply run `wails dev` in the project root.
+You can run these commands in the `frontend` directory, or simply run `wails dev` in the project root.
 
 1. Enter the frontend directory:
     ```bash

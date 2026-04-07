@@ -5,11 +5,24 @@ import (
 	"gbase/src/core/config"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strings"
 )
 
 func IsFileExists(path string) bool {
 	_, err := os.Stat(path)
 	return err == nil
+}
+
+// get current file name without extension
+func GetCurrentFileNameNoExt() string {
+	// skip 1 level to get this file
+	_, file, _, ok := runtime.Caller(1)
+	if !ok {
+		return ""
+	}
+	base := filepath.Base(file)
+	return strings.TrimSuffix(base, filepath.Ext(base))
 }
 
 func GetStorageDirOrCreate(elem ...string) (string, error) {

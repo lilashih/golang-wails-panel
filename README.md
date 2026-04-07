@@ -12,7 +12,7 @@
     |---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
     | title   | 專案名稱，會顯示在啟動面板上。 |
     | type    | 專案類型，目前支援兩種：<br>• pm2：適用於 Node.js 等需用 pm2 管理的專案，相關指令（start、stop、install）通常是 pnpm/yarn/npm 等腳本。<br>• exe：適用於 Windows 執行檔（.exe）專案，start、stop 會是 Windows 指令，例如啟動 exe 或用 taskkill 關閉。 |
-    | key     | 專案唯一識別碼，通常用於內部識別。<br>• pm2：pm2 時需為 pam2 的識別名稱 name。<br>• exe：exe 時需為進程名稱，通常是該執行檔檔名。 |
+    | key     | 專案唯一識別碼，通常用於內部識別。<br>• pm2：pm2 時需為 pm2 的識別名稱 name。<br>• exe：exe 時需為進程名稱，通常是該執行檔檔名。 |
     | start   | 啟動專案的指令。 |
     | stop    | 停止專案的指令。 |
     | install | 安裝或初始化專案的指令（可選）。 |
@@ -48,12 +48,12 @@
 2. Log 檢視器  
 可自動讀取 `storage/log/` 目錄下的所有日誌檔案，並支援選擇其他額外檔案。即使是內容非常龐大的檔案，也能流暢閱讀與檢索，方便進行日誌分析與除錯。
 
-3. 系統托盤（Systray）  
+3. 系統托盤（`Systray`）  
 支援最小化至系統托盤並在背景常駐，提供快速操作選單（如顯示/隱藏視窗、開啟日誌資料夾、結束程式等），方便在不占用工作列的情況下管理應用程式。
 
 ## ▍目錄架構
 ```
-├── app.go                      # Go 主程式進入點
+├── app.go                      # Wails 註冊點
 ├── go.mod
 ├── go.sum
 ├── main.go                     # Go 主程式進入點
@@ -61,14 +61,12 @@
 ├── README.md                   # 專案說明文件
 ├── frontend/                   # 前端程式，詳細說明請看[README.md](frontend\README.md)
 ├── src/                        # 後端 Go 程式
-│   ├── core/                   # 核心功能（cmd, config, helper, logger, pm2）
-│   ├── def/                    # 定義檔
+│   ├── core/                   # 核心功能（cmd, config, def, helper, logger, pm2）
 │   └── service/                # 服務層（log_viewer, panel 等）
 ├── release/                    # 發佈相關資源 
 │   ├── golang-wails-panel.exe  # Go 打包後的執行檔
 │   └── projects/               # 專案目錄
-├── storage/                    # 儲存資料用
-│   └── log/                    # 本地儲存（log/ 等）
+└── storage/                    # 儲存資料用（log/ 等）
 ```
 
 ## ▍套件
@@ -78,7 +76,6 @@
 | [fyne.io/systray](https://github.com/fyne-io/systray) | 建立系統托盤。 |
 | [caarlos0/env](https://github.com/caarlos0/env) | 解析環境變數到結構體。 |
 | [golobby/dotenv](https://github.com/golobby/dotenv) | 載入 `.env` 檔案設定。 |
-| [lumberjack](https://github.com/natefinch/lumberjack) | 日誌檔案自動輪替 (log rotation)工具 。 |
 
 
 ## ▍環境變數
@@ -99,7 +96,7 @@
 | 名稱 | 用途 | 預設值（正式環境） | 備註 |
 |---|---|---|---|
 | `APP_MODE` | 執行模式 (`release` / `debug` / `test`) | `release` | 正式環境請使用 `release` |
-| `PROJECT_BASE_PATH` | 要掃描的專案目錄 | `./projects` | 直接填要掃描的目錄，相對路徑或絕對路徑皆可，例如 `./release/projects` 或 `C:\myDir\projects` |
+| `PROJECT_BASE_PATH` | 要掃描的專案目錄 | `./projects` | 相對路徑或絕對路徑皆可，例如 `./release/projects` 或 `C:\myDir\projects` |
 
 
 
@@ -114,11 +111,12 @@
 - 產生的日誌檔案路徑：會在專案根目錄的 `storage` 底下自動建立 `log` 目錄（預設為 `./storage/log`）。
 - 檔名格式：`log-YYYY-MM-DD.log`，每日產生新檔案（含 `UTF-8 BOM`）。
 - 特性：
-    - 使用 `lumberjack` 做檔案控管，寫入前自動監測系統日期，跨日就自動換檔。
+    - 寫入前自動監測系統日期，跨日就自動換檔。
     - 移除 `ANSI` 顏色控制碼，確保內容為純文字。
     - `logger.Log` 實際上為 `*log.Logger`（標準 `library`）的包裝，因此可以直接使用 `log` 的方法與行為：
         - 可直接使用 `Print/Printf/Println`、`Fatal/Fatalf`、`Panic/Panicf` 等方法。
         - 預設使用 `flags` `log.LstdFlags | log.Lshortfile`（含時間戳與呼叫來源檔案:行號）。  
+    - 過期日誌會自動壓縮為 `.gz` 以節省磁碟空間。  
     - 可於 `src/core/logger` 自訂格式、輸出與輪替策略。
 - `Wails` 與前端日誌事件：
     - [wails.go](`src/core/logger/wails.go`) 裡定義了 `RegisterCtx` 與 `NewWailsLog()`，後端在啟動時會把這個 `adapter` 註冊給 `Wails`
@@ -160,6 +158,13 @@
     ```
 
 
+## ▍測試
+測試檔案攤平放在 ``test`` 目錄下，不要建立子目錄，然後執行
+```
+go test -v ./test/...
+```
+
+
 ## ▍其他說明
 
 - projects  
@@ -171,4 +176,3 @@
     ```bash
     mklink /D your_link target_folder
     mklink /D aaa path1\path2\release
-    ```

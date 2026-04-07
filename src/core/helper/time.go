@@ -1,7 +1,7 @@
 package helper
 
 import (
-	"gbase/src/def"
+	"gbase/src/core/def"
 	"time"
 )
 

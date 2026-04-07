@@ -32,6 +32,8 @@ var (
 //───────────────────────────────────────────────────────────
 
 func main() {
+	logger.Log.Print("系統已啟動")
+
 	// 先跑 systray（非阻塞；實際阻塞在其內部 goroutine）
 	go systray.Run(onReady, onExit)
 

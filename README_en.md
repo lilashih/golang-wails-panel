@@ -10,7 +10,7 @@ This project is a desktop application with the following features:
     |---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
     | title   | Project name, shown in the panel. |
     | type    | Project type, supports two types:<br>• pm2: For Node.js or similar projects managed by pm2. Commands are usually pnpm/yarn/npm scripts.<br>• exe: For Windows executables (.exe). start/stop are Windows commands. |
-    | key     | Unique project identifier, usually for internal use. |
+    | key     | Unique project identifier, usually for internal use.<br>• pm2：The PM2 process name (must match the "name" field in PM2).。<br>• exe：The executable process name, usually the filename. |
     | start   | Command to start the project. |
     | stop    | Command to stop the project. |
     | install | Command to install or initialize the project (optional). |
@@ -42,17 +42,17 @@ This project is a desktop application with the following features:
         }
         ```
 
-2. Log Viewer
+2. Log Viewer  
 Automatically scans all log files under the [log](storage/log/) directory. You can also select additional files to view. The viewer supports reading and searching very large files efficiently, making log analysis and debugging easier.
 
-3. System Tray (Systray)
+3. System Tray (`Systray`)  
 Supports minimizing to the system tray and running in the background, with a quick action menu (e.g., show/hide window, open logs folder, quit the app) so you can manage the application without occupying the taskbar.
 
 ---
 
 ## ▍Directory Structure
 ```
-├── app.go                      # Go main entry point
+├── app.go                      # Wails register
 ├── go.mod
 ├── go.sum
 ├── main.go                     # Go main entry point
@@ -60,15 +60,23 @@ Supports minimizing to the system tray and running in the background, with a qui
 ├── README.md                   # Project documentation
 ├── frontend/                   # Frontend code (see frontend/README.md for details)
 ├── src/                        # Backend Go code
-│   ├── core/                   # Core features (cmd, config, helper, logger, pm2)
-│   ├── def/                    # Definitions
+│   ├── core/                   # Core features (cmd, config, def, helper, logger, pm2)
 │   └── service/                # Services (log_viewer, panel, etc.)
 ├── release/                    # Release resources
 │   ├── golang-wails-panel.exe  # Compiled Go executable
 │   └── projects/               # Projects directory
-├── storage/                    # Data storage
-│   └── log/                    # Local storage (log/, etc.)
+└── storage/                    # Local storage (log/, etc.)
 ```
+
+## ▍Dependencies
+
+| Package | Description |
+|---|---|
+| [Wails](https://github.com/wailsapp/wails) | A Go-based desktop application framework (version 2). |
+| [fyne.io/systray](https://github.com/fyne-io/systray) | Enables system tray functionality. |
+| [caarlos0/env](https://github.com/caarlos0/env) | Maps environment variables to Go structs. |
+| [golobby/dotenv](https://github.com/golobby/dotenv) | Loads environment variables from `.env` files. |
+
 
 ## ▍Environment Variables
 All configuration is located in [src/core/config](/src/core/config) and initialized automatically by [src/core/config/main.go](/src/core/config/main.go), which also loads `.env`.
@@ -101,15 +109,16 @@ If you only want to write log messages to files, use `logger.Log`. If you want l
 - Generated log path: the application automatically creates the `log` directory under `storage` in the project root (default: `./storage/log`).
 - Filename format: `log-YYYY-MM-DD.log`. New log file generated daily (with `UTF-8 BOM`).
 - Characteristics:
-    - Uses `lumberjack` for file management, checks the system date before writing, and rotates automatically when the day changes.
+    - Automatically rotates the log file when the date changes.
     - Removes `ANSI` color escape codes to keep the log content as plain text.
     - `logger.Log` is actually a wrapper around `*log.Logger` from the Go standard library, so you can use standard `log` methods and behavior directly:
         - `Print/Printf/Println`, `Fatal/Fatalf`, `Panic/Panicf`, and similar methods are available.
         - The default flags are `log.LstdFlags | log.Lshortfile`, which include timestamps and the caller file:line.
+    - Expired logs are automatically compressed to `.gz` to save disk space.
     - If you need to change the format or add a log rotate strategy, you can modify it directly in [src/core/logger](/src/core/logger).
 - Wails and frontend log events:  
     - [wails.go](src/core/logger/wails.go) defines `RegisterCtx` and `NewWailsLog()`. The backend registers this adapter with Wails during startup.
-    - The adapter forwards each log entry to `logger.Log` and also emits an event through `runtime.EventsEmit` so the frontend can display logs in real time.
+    - The `adapter` forwards each log entry to `logger.Log` and also emits an event through `runtime.EventsEmit` so the frontend can display logs in real time.
 - Example:
     ```go
     import (
@@ -144,6 +153,14 @@ If you only want to write log messages to files, use `logger.Log`. If you want l
     ```bash
     wails build
     ```
+
+
+## ▍Testing  
+Place test files directly under the `test` directory (do not create subdirectories), then run:
+```
+go test -v ./test/...
+```
+
 
 ## ▍Additional Notes
 
