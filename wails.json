@@ -7,9 +7,21 @@
   "frontend:build": "npm run build",
   "frontend:dev:watcher": "npm run dev",
   "frontend:dev:serverUrl": "auto",
-  "build:dir": "release",
+  "build:dir": "/",
+  "postBuildHooks": {
+    "windows/*": "powershell -NoProfile -ExecutionPolicy Bypass -File ../scripts/post-build.ps1 \"${bin}\"",
+    "linux/*": "sh ../scripts/post-build.sh \"${bin}\""
+  },
+  "info": {
+    "companyName": "lila",
+    "productName": "golang-wails-panel",
+    "productVersion": "1.0.0",
+    "copyright": "Copyright (c) lila",
+    "comments": "golang-wails-panel"
+  },
   "author": {
     "name": "lila",
     "email": "-"
   }
 }
+

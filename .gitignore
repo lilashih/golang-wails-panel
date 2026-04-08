@@ -1,5 +1,6 @@
 /.gocache
 release/bin
+/bin
 release/storage
 node_modules
 frontend/dist

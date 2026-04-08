@@ -59,6 +59,7 @@
 ├── main.go                     # Go 主程式進入點
 ├── wails.json                  # Wails 設定檔
 ├── README.md                   # 專案說明文件
+├── scripts/                    # 執行腳本
 ├── frontend/                   # 前端程式，詳細說明請看[README.md](frontend\README.md)
 ├── src/                        # 後端 Go 程式
 │   ├── core/                   # 核心功能（cmd, config, def, helper, logger, pm2）
@@ -152,10 +153,32 @@
     wails dev
     ```
 
-- 打包  
-    ```bash
-    wails build
-    ```
+## ▍打包  
+執行以下指令進行打包：  
+ ```bash
+wails build
+```
+
+`Wails` 的打包流程分為兩個階段：  
+ 1. 預設輸出目錄（bin）  
+    執行 `wails build` 後，編譯完成的執行檔會先產生在目錄 `bin/` 底下（ `Wails` 的打包檔依定會包一層 `bin/` ）。  
+
+    例如：  
+    - Windows：bin/golang-wails-panel.exe  
+    - Linux：bin/golang-wails-panel  
+
+2. 自動同步至 `release` 目錄  
+    專案透過 `wails.json` 中設定的 `postBuildHooks`，在打包完成後自動執行腳本，將檔案複製到 `release/` 目錄，方便發佈使用。  
+
+    不同作業系統會呼叫對應腳本：  
+    - Windows：scripts/post-build.ps1
+    - Linux：scripts/post-build.sh
+
+        | 原始位置                     | 發佈位置                          |
+        | ---------------------------- | -------------------------------- |
+        | `bin/golang-wails-panel.exe` | `release/golang-wails-panel.exe` |
+        | `bin/golang-wails-panel`     | `release/golang-wails-panel`     |
+
 
 
 ## ▍測試
@@ -176,3 +199,4 @@ go test -v ./test/...
     ```bash
     mklink /D your_link target_folder
     mklink /D aaa path1\path2\release
+
