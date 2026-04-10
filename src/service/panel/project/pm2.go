@@ -2,9 +2,10 @@ package project
 
 import (
 	"fmt"
-	"gbase/src/core/cmd"
+	"gbase/src/core/cmd/shell"
 	"gbase/src/core/logger"
 	core "gbase/src/core/pm2"
+	"strings"
 )
 
 func NewPm2(config ProjectConfig, path string) *Project {
@@ -13,10 +14,14 @@ func NewPm2(config ProjectConfig, path string) *Project {
 		Path:   path,
 	}
 	p.Install = func() error {
-		return cmd.RunInNewConsole([]string{p.Config.Install}, p.Path)
+		if strings.TrimSpace(p.Config.Install) == "" {
+			return nil
+		}
+
+		return shell.RunInNewConsole(p.Config.Install, p.Path)
 	}
 	p.Start = func() error {
-		err := cmd.Run("cmd", []string{p.Config.Start}, p.Path)
+		err := shell.Run(p.Config.Start, p.Path)
 		waitForRunningState(p, true)
 
 		if !p.Running {
@@ -26,7 +31,7 @@ func NewPm2(config ProjectConfig, path string) *Project {
 		return err
 	}
 	p.Stop = func() error {
-		err := cmd.Run("cmd", []string{p.Config.Stop}, p.Path)
+		err := shell.Run(p.Config.Stop, p.Path)
 		waitForRunningState(p, false)
 
 		if p.Running {

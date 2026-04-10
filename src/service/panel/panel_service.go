@@ -2,7 +2,7 @@ package panel
 
 import (
 	"context"
-	"gbase/src/core/cmd"
+	"gbase/src/core/cmd/explore"
 	"gbase/src/service/panel/project"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
@@ -37,7 +37,7 @@ func (s *PanelService) ListProjects() []*project.Project {
 func (s *PanelService) OpenProject(index int) {
 	p := s.Projects[index]
 
-	if err := cmd.OpenDir(p.Path); err != nil {
+	if err := explore.OpenDir(p.Path); err != nil {
 		runtime.LogErrorf(s.ctx, "開啟資料夾失敗：%v", err)
 	}
 }

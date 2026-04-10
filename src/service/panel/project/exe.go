@@ -3,8 +3,9 @@ package project
 import (
 	"encoding/csv"
 	"fmt"
-	"gbase/src/core/cmd"
+	"gbase/src/core/cmd/shell"
 	"io"
+	"runtime"
 	"strings"
 )
 
@@ -14,10 +15,14 @@ func NewExe(config ProjectConfig, path string) *Project {
 		Path:   path,
 	}
 	p.Install = func() error {
-		return nil
+		if strings.TrimSpace(p.Config.Install) == "" {
+			return nil
+		}
+
+		return shell.RunInNewConsole(p.Config.Install, p.Path)
 	}
 	p.Start = func() error {
-		err := cmd.Run("cmd", []string{p.Config.Start}, p.Path)
+		err := shell.Run(p.Config.Start, p.Path)
 		waitForRunningState(p, true)
 
 		if !p.Running {
@@ -27,7 +32,7 @@ func NewExe(config ProjectConfig, path string) *Project {
 		return err
 	}
 	p.Stop = func() error {
-		err := cmd.Run("cmd", []string{p.Config.Stop}, p.Path)
+		err := shell.Run(p.Config.Stop, p.Path)
 		waitForRunningState(p, false)
 
 		if p.Running {
@@ -38,21 +43,33 @@ func NewExe(config ProjectConfig, path string) *Project {
 	}
 
 	p.CheckRunning = func() {
-		output, err := cmd.RunGetOutput("cmd", []string{"tasklist", "/FO", "CSV", "/NH"}, "")
-		if err != nil {
-			p.Running = false
-			return
-		}
-
-		p.Running = isExeRunning(output, p.Config.Key)
+		p.Running = isExeRunning(p.Config.Key)
 	}
 
 	return p
 }
 
-func isExeRunning(taskListOutput string, key string) bool {
+func isExeRunning(key string) bool {
+	switch runtime.GOOS {
+	case "windows":
+		return isExeRunningOnWindows(key)
+	default:
+		return isExeRunningOnUnix(key)
+	}
+}
+
+func isExeRunningOnWindows(key string) bool {
+	output, err := shell.RunGetOutput("tasklist /FO CSV /NH", "")
+	if err != nil {
+		return false
+	}
+
+	return isExeRunningOnWindowsOutput(output, key)
+}
+
+func isExeRunningOnWindowsOutput(output string, key string) bool {
 	candidates := buildExeCandidates(key)
-	reader := csv.NewReader(strings.NewReader(taskListOutput))
+	reader := csv.NewReader(strings.NewReader(output))
 
 	for {
 		record, err := reader.Read()
@@ -85,6 +102,17 @@ func buildExeCandidates(key string) []string {
 	}
 
 	return uniqueStrings(candidates)
+}
+
+func isExeRunningOnUnix(key string) bool {
+	for _, candidate := range buildExeCandidates(key) {
+		commandLine := fmt.Sprintf("pgrep -f %q", candidate)
+		if _, err := shell.RunGetOutput(commandLine, ""); err == nil {
+			return true
+		}
+	}
+
+	return false
 }
 
 func uniqueStrings(values []string) []string {

@@ -1,0 +1,48 @@
+# syntax=docker/dockerfile:1.7
+
+FROM golang:1.23-bookworm AS builder
+
+ARG DEBIAN_FRONTEND=noninteractive
+ARG TARGETARCH=amd64
+ARG NODE_MAJOR=22
+ARG WAILS_VERSION=v2.11.0
+ARG WEBKIT_PKG=libwebkit2gtk-4.0-dev
+ARG WAILS_TAGS=
+
+WORKDIR /app
+ENV PATH="/go/bin:${PATH}"
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    ca-certificates \
+    gnupg \
+    build-essential \
+    pkg-config \
+    libgtk-3-dev \
+    ${WEBKIT_PKG} \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash - \
+    && apt-get update && apt-get install -y --no-install-recommends nodejs \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN go install github.com/wailsapp/wails/v2/cmd/wails@${WAILS_VERSION}
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY frontend/package.json frontend/package-lock.json ./frontend/
+RUN cd frontend && npm ci
+
+COPY . .
+RUN sed -i 's|sh ../scripts/post-build.sh|sh /app/scripts/post-build.sh|g' /app/wails.json \
+    && chmod +x /app/scripts/post-build.sh
+
+RUN if [ -n "${WAILS_TAGS}" ]; then \
+        wails build -clean -platform linux/${TARGETARCH} -tags "${WAILS_TAGS}"; \
+    else \
+        wails build -clean -platform linux/${TARGETARCH}; \
+    fi
+
+FROM scratch AS export
+COPY --from=builder /app/release/ /

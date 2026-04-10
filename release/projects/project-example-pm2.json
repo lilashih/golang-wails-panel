@@ -1,0 +1,11 @@
+[
+  {
+    "os": "windows",
+    "title": "windows version",
+    "type": "pm2",
+    "key": "pm2_windows",
+    "start": "pnpm start",
+    "stop": "pnpm stop",
+    "install": "pnpm install"
+  }
+] 

@@ -148,11 +148,88 @@ If you only want to write log messages to files, use `logger.Log`. If you want l
     wails dev
     ```
 
-- Build  
-    Compile the project into an executable:
-    ```bash
-    wails build
-    ```
+## ▍ Build  
+Compile the project into an executable:
+```bash
+wails build
+```
+
+The `Wails` build flow has two stages:
+
+1. Default output directory `bin`  
+    After running `wails build`, the compiled executable is first generated under `bin/` (`Wails` always places the build output inside `bin/`).
+    - Windows: `bin/golang-wails-panel.exe`
+    - Linux: `bin/golang-wails-panel`
+
+2. Automatically sync to the `release` directory  
+    This project uses `postBuildHooks` configured in `wails.json` to run a script after the build finishes, then copies the executable to `release/` for distribution.
+
+    Different operating systems call different scripts:
+    - Windows: `scripts/post-build.ps1`
+    - Linux: `scripts/post-build.sh`
+
+### Build Linux Executable with Docker on Windows
+If you are on a `Windows` machine and want to quickly generate a `Linux` executable, this project includes a `Docker` build flow. It will:
+- Run `wails build` inside a `Linux` container
+- Export the build output directly into the project's `release/` directory
+- Automatically run `docker builder prune -af` after the build to clean the build cache
+- Avoid keeping the final `image`
+
+#### Prerequisites
+- `Docker Desktop` is installed
+- `Docker buildx` works correctly
+
+#### Basic Usage
+Run this at the project root:
+```powershell
+.\scripts\build-linux-docker.ps1
+```
+
+The default output path is:
+```text
+release/golang-wails-panel
+```
+
+If you need to keep outputs for multiple architectures at the same time, specify `-OutputDir` yourself, for example `release/linux-arm64`.
+
+#### Available Parameters
+```powershell
+.\scripts\build-linux-docker.ps1 -Arch amd64
+.\scripts\build-linux-docker.ps1 -Arch arm64
+.\scripts\build-linux-docker.ps1 -Arch amd64 -NoCache
+.\scripts\build-linux-docker.ps1 -Arch amd64 -UseWebkit241
+```
+
+Parameter details:
+| Parameter | Description |
+|---|---|
+| `-Arch` | Target architecture. Supported values: `amd64`, `arm64`. |
+| `-OutputDir` | Custom output directory. Default is `release`. If you want to keep multiple architecture outputs, use different directories manually. |
+| `-NoCache` | Do not use Docker build cache. |
+| `-UseWebkit241` | Use `libwebkit2gtk-4.1-dev` for newer `Linux` environments and add `-tags webkit2_41`. |
+
+#### Use the Dockerfile Directly
+If you do not want to use the PowerShell script, you can run:
+```powershell
+docker buildx build --pull `
+    --build-arg TARGETARCH=amd64 `
+    -f .\scripts\Dockerfile.linux-build `
+    --output type=local,dest=.\release `
+    .
+docker builder prune -af
+```
+
+If the target `Linux` distribution requires `webkit2gtk-4.1`, use:
+```powershell
+docker buildx build --pull `
+    --build-arg TARGETARCH=amd64 `
+    --build-arg WEBKIT_PKG=libwebkit2gtk-4.1-dev `
+    --build-arg WAILS_TAGS=webkit2_41 `
+    -f .\scripts\Dockerfile.linux-build `
+    --output type=local,dest=.\release `
+    .
+docker builder prune -af
+```
 
 
 ## ▍Testing  

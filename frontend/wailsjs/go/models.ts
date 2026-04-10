@@ -36,6 +36,7 @@ export namespace log_viewer {
 export namespace project {
 	
 	export class ProjectConfig {
+	    os: string;
 	    title: string;
 	    key: string;
 	    type: string;
@@ -49,6 +50,7 @@ export namespace project {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.os = source["os"];
 	        this.title = source["title"];
 	        this.key = source["key"];
 	        this.type = source["type"];

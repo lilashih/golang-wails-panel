@@ -3,7 +3,7 @@ package pm2
 import (
 	"encoding/json"
 	"fmt"
-	"gbase/src/core/cmd"
+	"gbase/src/core/cmd/shell"
 	"strings"
 )
 
@@ -25,7 +25,7 @@ func IsServiceOnline(service string, cmdDir string) (bool, error) {
 	var errors []string
 
 	for _, commandLine := range commands {
-		data, err := cmd.RunGetOutput("cmd", []string{commandLine}, cmdDir)
+		data, err := shell.RunGetOutput(commandLine, cmdDir)
 		if err != nil {
 			errors = append(errors, fmt.Sprintf("%s: %v", commandLine, err))
 			continue

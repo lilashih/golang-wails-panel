@@ -1,0 +1,20 @@
+[
+  {
+    "os": "windows",
+    "title": "windows version",
+    "type": "exe",
+    "key": "app_windows",
+    "start": "start /b app_windows.exe",
+    "stop": "taskkill /IM app_windows.exe /F",
+    "install": "app_windows.exe migrate"
+  },
+  {
+    "os": "linux",
+    "title": "linux version",
+    "type": "exe",
+    "key": "app_linux",
+    "start": "nohup ./app_linux > ./app.log 2>&1 &",
+    "stop": "pkill -f app_linux",
+    "install": "./app_linux migrate"
+  }
+] 

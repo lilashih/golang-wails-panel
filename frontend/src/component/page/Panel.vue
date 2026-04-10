@@ -27,6 +27,14 @@
           >
             停止
           </button>
+          <!-- 非預期狀態也能手動停止 -->
+          <button
+            class="btn btn-stop"
+            @click="stopProject(index)"
+            :disabled="loading"
+          >
+            強制停止
+          </button>
           <!-- 重新安裝 -->
           <button
             class="btn"

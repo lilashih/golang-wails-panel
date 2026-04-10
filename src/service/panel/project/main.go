@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -25,6 +26,7 @@ type Project struct {
 }
 
 type ProjectConfig struct {
+	OS      string `json:"os"`
 	Title   string `json:"title"`
 	Key     string `json:"key"`
 	Type    string `json:"type"`
@@ -59,13 +61,19 @@ func NewProjects() ([]*Project, error) {
 				continue
 			}
 
-			var cfg ProjectConfig
-			if err := json.Unmarshal(data, &cfg); err != nil {
-				logger.Log.Printf("解析 %s 失敗: %v", entry.Name(), err)
+			var configs []ProjectConfig
+			if err := json.Unmarshal(data, &configs); err != nil {
+				logger.Log.Printf("解析 %s 失敗: project.json 必須為陣列格式: %v", entry.Name(), err)
 				continue
 			}
 
-			if cfg.Title == "" || cfg.Key == "" || cfg.Start == "" || cfg.Stop == "" {
+			cfg, ok := findConfigForCurrentOS(configs)
+			if !ok {
+				logger.Log.Printf("專案 %s 找不到 %s 對應的設定，已跳過", entry.Name(), runtime.GOOS)
+				continue
+			}
+
+			if cfg.Title == "" || cfg.Key == "" || cfg.Type == "" || cfg.Start == "" || cfg.Stop == "" {
 				logger.Log.Printf("設定檔 %s 缺少必要欄位，已跳過", entry.Name())
 				continue
 			}
@@ -89,6 +97,26 @@ func NewProjects() ([]*Project, error) {
 	}
 
 	return list, nil
+}
+
+func findConfigForCurrentOS(configs []ProjectConfig) (ProjectConfig, bool) {
+	return findConfigForOS(configs, runtime.GOOS)
+}
+
+func findConfigForOS(configs []ProjectConfig, targetOS string) (ProjectConfig, bool) {
+	normalizedTargetOS := normalizeProjectOS(targetOS)
+
+	for _, cfg := range configs {
+		if normalizeProjectOS(cfg.OS) == normalizedTargetOS {
+			return cfg, true
+		}
+	}
+
+	return ProjectConfig{}, false
+}
+
+func normalizeProjectOS(value string) string {
+	return strings.ToLower(strings.TrimSpace(value))
 }
 
 func readProjectDir(elem ...string) (string, []fs.DirEntry, error) {
