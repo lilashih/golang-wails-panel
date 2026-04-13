@@ -27,7 +27,7 @@
 
     - **`pm2` 專案設定範例：**
         ```json
-        {
+        [{
             "os": "windows",
             "title": "Nodejs 專案設定範例",
             "type": "pm2",
@@ -35,7 +35,7 @@
             "start": "pnpm start", // 或 npm start，start 指令需在專案內的 package.json 定義
             "stop": "pnpm stop", // 或 npm stop，stop 指令需在專案內的 package.json 定義
             "install": "pnpm install" // 或 npm install
-        }
+        }]
         ```
 
     - **`exe` 專案設定範例：**
@@ -75,8 +75,11 @@
 ├── wails.json                  # Wails 設定檔
 ├── README.md                   # 專案說明文件
 ├── scripts/                    # 執行腳本
+│   ├── build-linux-appimage.ps1 # 在 Windows 透過 Docker 打包 Linux AppImage
 │   ├── build-linux-docker.ps1  # 在 Windows 透過 Docker 打包 Linux 執行檔
+│   ├── Dockerfile.linux-appimage # Linux AppImage 打包用 Dockerfile
 │   ├── Dockerfile.linux-build  # Linux 打包用 Dockerfile
+│   ├── package-appimage.sh     # Linux AppImage 封裝腳本
 │   ├── post-build.ps1          # Windows 打包完成後同步至 release
 │   └── post-build.sh           # Linux 打包完成後同步至 release
 ├── frontend/                   # 前端程式，詳細說明請看[README.md](frontend\README.md)
@@ -86,6 +89,7 @@
 │   └── service/                # 服務層（log_viewer, panel 等）
 ├── release/                    # 發佈相關資源 
 │   ├── golang-wails-panel.exe  # Go 打包後的執行檔
+│   ├── golang-wails-panel.AppImage # Linux AppImage
 │   └── projects/               # 專案目錄
 └── storage/                    # 儲存資料用（log/ 等）
 ```
@@ -255,6 +259,71 @@ docker buildx build --pull `
   .
 docker builder prune -af
 ```
+
+### 使用 Docker 在 Windows 打包 Linux AppImage
+如果你的目標是讓 Linux 使用者更接近「下載後直接雙擊執行」，建議改用 `AppImage`。專案已提供獨立的 `Docker` 打包流程，會：
+
+- 在 `Linux` 容器內執行 `wails build`
+- 透過 `linuxdeploy` 與 `gtk plugin` 將 `GTK / WebKitGTK` 相關相依一併封裝進 `AppImage`
+- 將產物直接匯出到專案的 `release/` 目錄
+- 建置完成後自動執行 `docker builder prune -af` 清除 `build cache`
+
+#### 基本用法
+在專案根目錄執行：
+```powershell
+.\scripts\build-linux-appimage.ps1
+```
+
+預設會輸出到：
+```text
+release/golang-wails-panel.AppImage
+```
+
+若需要同時保留不同架構的產物，請自行指定 `-OutputDir`，例如 `release/appimage-arm64`。
+
+#### 可用參數
+```powershell
+.\scripts\build-linux-appimage.ps1 -Arch amd64
+.\scripts\build-linux-appimage.ps1 -Arch arm64
+.\scripts\build-linux-appimage.ps1 -Arch amd64 -NoCache
+.\scripts\build-linux-appimage.ps1 -Arch amd64 -UseWebkit241
+```
+
+參數說明：
+| 參數 | 說明 |
+|---|---|
+| `-Arch` | 目標架構，可用 `amd64` 或 `arm64`。 |
+| `-OutputDir` | 自訂輸出目錄，預設為 `release`。若要同時保留不同架構產物，請自行指定不同目錄。 |
+| `-NoCache` | 不使用 `Docker build cache`。 |
+| `-UseWebkit241` | 針對較新的 `Linux` 環境改用 `libwebkit2gtk-4.1-dev`，並加上 `-tags webkit2_41`。 |
+
+#### 直接使用 Dockerfile
+如果你不想透過 PowerShell 腳本，也可以直接執行：
+```powershell
+docker buildx build --pull `
+  --build-arg TARGETARCH=amd64 `
+  -f .\scripts\Dockerfile.linux-appimage `
+  --output type=local,dest=.\release `
+  .
+docker builder prune -af
+```
+
+若目標 `Linux` 發行版需要 `webkit2gtk-4.1`，可改用：
+```powershell
+docker buildx build --pull `
+  --build-arg TARGETARCH=amd64 `
+  --build-arg WEBKIT_PKG=libwebkit2gtk-4.1-dev `
+  --build-arg WAILS_TAGS=webkit2_41 `
+  -f .\scripts\Dockerfile.linux-appimage `
+  --output type=local,dest=.\release `
+  .
+docker builder prune -af
+```
+
+#### AppImage 補充說明
+- `AppImage` 的目的，是降低目標機器手動安裝 `libwebkit2gtk-4.0.so.37` 這類相依套件的機率，比單一 `ELF` 執行檔更適合發佈給一般 Linux 使用者。
+- 某些 Linux 發行版若缺少 `FUSE` 執行環境，雙擊 `AppImage` 仍可能無法啟動；常見需安裝 `libfuse2` 或新版系統的 `libfuse2t64`。
+- 專案目前在 `release` 模式會優先以執行檔所在目錄作為相對路徑基準，因此雙擊 `AppImage` 時，`projects` 與 `storage` 會比原本單純依賴目前工作目錄更穩定。
 
 
 

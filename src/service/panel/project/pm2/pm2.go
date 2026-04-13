@@ -4,17 +4,38 @@ import (
 	"encoding/json"
 	"fmt"
 	"gbase/src/core/cmd/shell"
+	"gbase/src/core/logger"
+	"gbase/src/service/panel/project/runner"
 	"strings"
 )
 
-type pm2Process struct {
+type Runner struct {
+	*runner.Command
+}
+
+type process struct {
 	Name   string `json:"name"`
 	PM2Env struct {
 		Status string `json:"status"`
 	} `json:"pm2_env"`
 }
 
-func IsServiceOnline(service string, cmdDir string) (bool, error) {
+func New(config runner.Config, path string) *Runner {
+	return &Runner{
+		Command: runner.NewCommand(config, path),
+	}
+}
+
+func (r *Runner) CheckRunning() bool {
+	online, err := isServiceOnline(r.Config.Key, r.Path)
+	if err != nil {
+		logger.Log.Printf("檢查 pm2 服務 %s 是否啟用失敗：%v", r.Config.Title, err)
+	}
+
+	return online
+}
+
+func isServiceOnline(service string, cmdDir string) (bool, error) {
 	commands := []string{
 		"pnpm exec pm2 jlist",
 		"npm exec -- pm2 jlist",
@@ -46,19 +67,17 @@ func IsServiceOnline(service string, cmdDir string) (bool, error) {
 func parseServiceStatus(data string, service string) (bool, error) {
 	data = cleanJSONOutput(data)
 
-	var processes []pm2Process
+	var processes []process
 	if err := json.Unmarshal([]byte(data), &processes); err != nil {
 		return false, fmt.Errorf("解析 JSON 失敗: %w", err)
 	}
 
-	// 搜尋指定服務
 	for _, proc := range processes {
 		if proc.Name == service {
 			return proc.PM2Env.Status == "online", nil
 		}
 	}
 
-	// 未找到服務 -> 未啟用
 	return false, nil
 }
 
@@ -69,5 +88,6 @@ func cleanJSONOutput(data string) string {
 	if start >= 0 && end > start {
 		return data[start : end+1]
 	}
+
 	return data
 }

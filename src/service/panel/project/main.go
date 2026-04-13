@@ -4,36 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"gbase/src/core/config"
+	"gbase/src/core/helper"
 	"gbase/src/core/logger"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
-	"time"
 )
-
-type Project struct {
-	Config ProjectConfig
-
-	Path    string `json:"path"`
-	Running bool   `json:"running"`
-
-	Install      func() error `json:"-"`
-	Start        func() error `json:"-"`
-	Stop         func() error `json:"-"`
-	CheckRunning func()       `json:"-"`
-}
-
-type ProjectConfig struct {
-	OS      string `json:"os"`
-	Title   string `json:"title"`
-	Key     string `json:"key"`
-	Type    string `json:"type"`
-	Start   string `json:"start"`
-	Stop    string `json:"stop"`
-	Install string `json:"install"`
-}
 
 // 從projects目錄載入專案
 func NewProjects() ([]*Project, error) {
@@ -78,14 +56,8 @@ func NewProjects() ([]*Project, error) {
 				continue
 			}
 
-			var p *Project
-
-			switch cfg.Type {
-			case "pm2":
-				p = NewPm2(cfg, filepath.Join(path, dir))
-			case "exe":
-				p = NewExe(cfg, filepath.Join(path, dir))
-			default:
+			p := buildProject(cfg, filepath.Join(path, dir))
+			if p == nil {
 				logger.Log.Printf("不支援的專案類型: %s", cfg.Type)
 				continue
 			}
@@ -100,11 +72,7 @@ func NewProjects() ([]*Project, error) {
 }
 
 func findConfigForCurrentOS(configs []ProjectConfig) (ProjectConfig, bool) {
-	return findConfigForOS(configs, runtime.GOOS)
-}
-
-func findConfigForOS(configs []ProjectConfig, targetOS string) (ProjectConfig, bool) {
-	normalizedTargetOS := normalizeProjectOS(targetOS)
+	normalizedTargetOS := normalizeProjectOS(runtime.GOOS)
 
 	for _, cfg := range configs {
 		if normalizeProjectOS(cfg.OS) == normalizedTargetOS {
@@ -122,7 +90,7 @@ func normalizeProjectOS(value string) string {
 func readProjectDir(elem ...string) (string, []fs.DirEntry, error) {
 	entries := []fs.DirEntry{}
 
-	basePath, err := os.Getwd()
+	basePath, err := helper.GetRuntimeBasePath()
 	if err != nil {
 		message := "開啟 projects 目錄失敗"
 		logger.Log.Printf("%s：%v", message, err)
@@ -170,18 +138,4 @@ func resolveProjectDir(basePath string, elem ...string) (string, error) {
 	}
 
 	return path, nil
-}
-
-// 啟動或停止時不馬上檢查狀態，等待3秒後再查詢
-func waitForRunningState(p *Project, expected bool) {
-	deadline := time.Now().Add(3 * time.Second)
-
-	for {
-		p.CheckRunning()
-		if p.Running == expected || time.Now().After(deadline) {
-			return
-		}
-
-		time.Sleep(250 * time.Millisecond)
-	}
 }

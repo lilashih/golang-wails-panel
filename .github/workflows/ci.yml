@@ -3,13 +3,13 @@ name: "Github Actions CI"
 on:
   push:
     branches: 
-      - 'master'
+      - '**'
   pull_request:
     branches:
       - master
 
 env:
-  MATRIX: "{\"os-ubuntu\":[\"ubuntu-latest\"], \"os-windows\":[\"windows-latest\"], \"go\":[\"1.24.0\"]}"
+  MATRIX: "{\"os-ubuntu\":[\"ubuntu-22.04\"], \"os-windows\":[\"windows-latest\"], \"go\":[\"1.24.0\"]}"
 
 jobs:
   set_matrix:
@@ -21,7 +21,7 @@ jobs:
         id: set-matrix
         run: echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
 
-  build:
+  build_windows:
     needs: set_matrix
     runs-on: ${{ matrix.os-windows }}
     strategy:
@@ -37,7 +37,8 @@ jobs:
 
       - name: Build windows-exe
         run: |
-          go build -ldflags="-H windowsgui" -o release/golang-wails-panel.exe
+          go install github.com/wailsapp/wails/v2/cmd/wails@latest
+          wails build
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4
@@ -49,7 +50,7 @@ jobs:
   build_linux:
     needs:
       - set_matrix
-      - build
+      - build_windows
     runs-on: ${{ matrix.os-ubuntu }}
     strategy:
       matrix: ${{ fromJson(needs.set_matrix.outputs.matrix) }}
@@ -65,9 +66,20 @@ jobs:
         with:
           env-path: ".env.dev"
 
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            pkg-config \
+            libglib2.0-dev \
+            libgtk-3-dev \
+            libwebkit2gtk-4.0-dev
+
       - name: Build linux-bin
         run: |
-          go build -o release/golang-wails-panel-linux
+          go install github.com/wailsapp/wails/v2/cmd/wails@latest
+          wails build
 
       - name: Commit changes
         uses: stefanzweifel/git-auto-commit-action@v4
@@ -75,6 +87,32 @@ jobs:
           commit_message: build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build_linux_appimage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build linux AppImage
+        shell: bash
+        run: |
+          docker buildx build --pull \
+            --build-arg TARGETARCH=amd64 \
+            -f ./scripts/Dockerfile.linux-appimage \
+            --output type=local,dest=./release \
+            .
+          docker builder prune -af
+
+      - name: Upload AppImage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: golang-wails-panel-appimage-amd64
+          path: release/*.AppImage
+          if-no-files-found: error
 
   test:
     needs: set_matrix

@@ -7,10 +7,10 @@
   "frontend:build": "npm run build",
   "frontend:dev:watcher": "npm run dev",
   "frontend:dev:serverUrl": "auto",
-  "build:dir": "/",
+  "build:dir": "build",
   "postBuildHooks": {
-    "windows/*": "powershell -NoProfile -ExecutionPolicy Bypass -File ../scripts/post-build.ps1 \"${bin}\"",
-    "linux/*": "sh ../scripts/post-build.sh \"${bin}\""
+    "windows/*": "powershell -NoProfile -ExecutionPolicy Bypass -File ../../scripts/post-build.ps1 \"${bin}\"",
+    "linux/*": "sh ../../scripts/post-build.sh \"${bin}\""
   },
   "info": {
     "companyName": "lila",
@@ -24,4 +24,3 @@
     "email": "-"
   }
 }
-

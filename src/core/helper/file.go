@@ -40,7 +40,7 @@ func GetStorageDirOrCreate(elem ...string) (string, error) {
 }
 
 func getStoragePath(elem ...string) (string, error) {
-	basePath, err := os.Getwd()
+	basePath, err := GetWritableRuntimeBasePath()
 	if err != nil {
 		return "", fmt.Errorf("Failed to get the project directory: %v", err)
 	}

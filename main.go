@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"gbase/src/core/config"
 	"gbase/src/core/logger"
+	go_runtime "runtime"
 
 	"fyne.io/systray"
 	"github.com/wailsapp/wails/v2"
@@ -20,7 +21,10 @@ import (
 var assets embed.FS
 
 //go:embed favicon.ico
-var icon []byte
+var windowsIcon []byte
+
+//go:embed appicon.png
+var linuxIcon []byte
 
 //─── 全域狀態 ───────────────────────────────────────────────
 
@@ -75,7 +79,7 @@ func onReady() {
 
 	<-ctxReady // **等 Wails 建好 ctx，再碰 runtime**
 
-	systray.SetIcon(icon)
+	systray.SetIcon(getTrayIcon())
 	systray.SetTooltip(fmt.Sprintf("%s - %s", config.App.Name, config.App.Version))
 
 	mToggle := systray.AddMenuItem("顯示", "Show main window")
@@ -100,4 +104,12 @@ func onReady() {
 
 func onExit() {
 	// 需要的話在此釋放資源
+}
+
+func getTrayIcon() []byte {
+	if go_runtime.GOOS == "windows" {
+		return windowsIcon
+	}
+
+	return linuxIcon
 }

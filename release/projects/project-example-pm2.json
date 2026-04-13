@@ -3,7 +3,16 @@
     "os": "windows",
     "title": "windows version",
     "type": "pm2",
-    "key": "pm2_windows",
+    "key": "pm2_key",
+    "start": "pnpm start",
+    "stop": "pnpm stop",
+    "install": "pnpm install"
+  },
+  {
+    "os": "linux",
+    "title": "linux version",
+    "type": "pm2",
+    "key": "pm2_key",
     "start": "pnpm start",
     "stop": "pnpm stop",
     "install": "pnpm install"
