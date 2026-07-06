@@ -1,20 +1,20 @@
 [
   {
     "os": "windows",
-    "title": "windows version",
+    "title": "Nodejs 專案設定範例",
     "type": "pm2",
-    "key": "pm2_key",
+    "key": "my-node-app",
     "start": "pnpm start",
     "stop": "pnpm stop",
     "install": "pnpm install"
   },
   {
     "os": "linux",
-    "title": "linux version",
+    "title": "Nodejs 專案設定範例",
     "type": "pm2",
-    "key": "pm2_key",
+    "key": "my-node-app",
     "start": "pnpm start",
     "stop": "pnpm stop",
     "install": "pnpm install"
   }
-] 
+]

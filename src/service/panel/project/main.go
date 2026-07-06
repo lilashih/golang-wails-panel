@@ -13,7 +13,12 @@ import (
 	"strings"
 )
 
-// 從projects目錄載入專案
+// 從 projects 目錄載入專案。
+//
+// projects 支援以下三種路徑格式：
+//   - 絕對路徑
+//   - 相對路徑：若與目前專案同層可直接使用；若需多層 ../../ 導覽，建議改用絕對路徑以提高穩定性
+//   - 捷徑：支援 Windows、Linux 捷徑
 func NewProjects() ([]*Project, error) {
 	var list []*Project
 
@@ -115,6 +120,12 @@ func readProjectDir(elem ...string) (string, []fs.DirEntry, error) {
 }
 
 // 解析絕對路徑、相對路徑，直接使用 PROJECT_BASE_PATH 指定的目錄
+// 1. PROJECT_BASE_PATH 如果是相對路徑，就用 helper.GetRuntimeBasePath() 補成絕對路徑。
+// 2. 如果 PROJECT_BASE_PATH 本來就是絕對路徑，就直接使用。
+// 3. Project.Path = filepath.Join(projectsBasePath, projectDir)。
+//
+// 唯一要注意的是 symlink：如果 entry 是 symlink，這段會把 dir = symlink：
+// 因此不論 projects 目錄的捷徑 symlink 是相對路徑(Linux)或是絕對路徑(Windows)，最後都會轉成絕對路徑
 func resolveProjectDir(basePath string, elem ...string) (string, error) {
 	cfgBase := strings.TrimSpace(strings.Trim(config.Project.BasePath, "\"")) // 移掉前後空白、雙引號
 	if cfgBase == "" {

@@ -5,7 +5,7 @@ import (
 	"reflect"
 )
 
-func GeStructJsonFields(structs ...interface{}) []string {
+func GetStructJsonFields(structs ...interface{}) []string {
 	fields := []string{}
 	seenFields := make(map[string]struct{}) // To store unique fields
 

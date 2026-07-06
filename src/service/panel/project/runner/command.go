@@ -4,6 +4,11 @@ import (
 	"fmt"
 	"gbase/src/core/cmd/shell"
 	"strings"
+	"time"
+)
+
+var (
+	timeout = 30 * time.Second
 )
 
 type Command struct {
@@ -27,23 +32,27 @@ func (c *Command) Install() error {
 }
 
 func (c *Command) Start(waitForRunningState func(expected bool) bool) error {
-	err := shell.Run(c.Config.Start, c.Path)
-
-	if !waitForRunningState(true) {
-		err = newStateError()
+	if err := shell.RunWithTimeout(c.Config.Start, c.Path, timeout); err != nil {
+		return err
 	}
 
-	return err
+	if !waitForRunningState(true) {
+		return newStateError()
+	}
+
+	return nil
 }
 
 func (c *Command) Stop(waitForRunningState func(expected bool) bool) error {
-	err := shell.Run(c.Config.Stop, c.Path)
-
-	if waitForRunningState(false) {
-		err = newStateError()
+	if err := shell.RunWithTimeout(c.Config.Stop, c.Path, timeout); err != nil {
+		return err
 	}
 
-	return err
+	if !waitForRunningState(false) {
+		return newStateError()
+	}
+
+	return nil
 }
 
 func newStateError() error {

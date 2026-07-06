@@ -1,0 +1,20 @@
+[
+  {
+    "os": "windows",
+    "title": "golang_dev_air",
+    "type": "exe",
+    "key": "air",
+    "start": "start /B air",
+    "stop": "taskkill /IM air.exe /F /T",
+    "install": ""
+  },
+  {
+    "os": "linux",
+    "title": "golang_dev_air",
+    "type": "exe",
+    "key": "air",
+    "start": "nohup ./air > ./app.log 2>&1 &",
+    "stop": "pkill -f air",
+    "install": ""
+  }
+] 

@@ -1,10 +1,24 @@
+.task
+bin
+frontend/dist
+frontend/node_modules
+build/linux/appimage/build
+build/windows/nsis/MicrosoftEdgeWebview2Setup.exe
+# Mobile generated (per-machine; overlays hold absolute paths)
+build/ios/xcode/overlay.json
+build/ios/xcode/gen/
+build/android/overlay.json
+build/android/gen/
+frontend/.vite-dev.log
+frontend/.vite-dev.err.log
 /.gocache
-release/bin
-/build/bin
 release/storage
 node_modules
-frontend/dist
 /tmp
 /.tmp
 *.exe~
 .env
+.DS_Store
+*.log
+*.tmp
+*.bak

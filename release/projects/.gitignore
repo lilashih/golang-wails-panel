@@ -2,3 +2,4 @@
 !.gitignore
 !project-example.json
 !project-example-pm2.json
+!project-example-air.json

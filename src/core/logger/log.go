@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"gbase/src/core/config"
 	"gbase/src/core/helper"
 	"io"
 	"log"
@@ -17,11 +18,19 @@ func init() {
 	std, err := newLogger.Init(newLogFactory)
 	if err == nil {
 		Log = std
+		flushConfigLoadErrors()
 		return
 	}
 
 	log.Printf("初始化log失敗，改用標準錯誤輸出: %v", err)
 	Log = log.New(os.Stderr, "", log.LstdFlags|log.Lshortfile)
+	flushConfigLoadErrors()
+}
+
+func flushConfigLoadErrors() {
+	for _, err := range config.LoadErrors {
+		Log.Printf("config 載入錯誤: %v", err)
+	}
 }
 
 func newLogFactory() (*log.Logger, error) {

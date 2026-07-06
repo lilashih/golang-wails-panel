@@ -1,16 +1,16 @@
 [
   {
     "os": "windows",
-    "title": "windows version",
+    "title": "執行檔專案設定範例",
     "type": "exe",
     "key": "app_windows",
-    "start": "start /b app_windows.exe",
+    "start": "start /B app_windows.exe",
     "stop": "taskkill /IM app_windows.exe /F",
     "install": "app_windows.exe migrate"
   },
   {
     "os": "linux",
-    "title": "linux version",
+    "title": "執行檔專案設定範例",
     "type": "exe",
     "key": "app_linux",
     "start": "nohup ./app_linux > ./app.log 2>&1 &",
