@@ -8,7 +8,7 @@ info:
   companyName: "GBase" # The name of the company
   productName: "GBase Panel" # The name of the application
   productIdentifier: "local.gbase.panel" # The unique product identifier
-  description: "Project control panel built with Wails" # The application description
+  description: "Panel" # The application description
   copyright: "(c) 2026" # Copyright text
   comments: "Some Product Comments" # Comments
   version: "2.0.0" # The application version

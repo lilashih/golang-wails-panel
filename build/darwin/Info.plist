@@ -3,7 +3,7 @@
 <plist version="1.0">
 	<dict>
 		<key>CFBundleExecutable</key>
-		<string>golang-wails-panel</string>
+		<string>panel</string>
 		<key>CFBundleGetInfoString</key>
 		<string>Some Product Comments</string>
 		<key>CFBundleIconFile</key>

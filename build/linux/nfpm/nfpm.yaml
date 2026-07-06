@@ -3,26 +3,26 @@
 #
 # The lines below are called `modelines`. See `:help modeline`
 
-name: "golang-wails-panel"
+name: "panel"
 arch: ${GOARCH}
 platform: "linux"
 version: "2.0.0"
 section: "default"
 priority: "extra"
 maintainer: ${GIT_COMMITTER_NAME} <${GIT_COMMITTER_EMAIL}>
-description: "Project control panel built with Wails"
+description: "Panel"
 vendor: "GBase"
 homepage: "https://wails.io"
 license: "MIT"
 release: "1"
 
 contents:
-  - src: "./bin/golang-wails-panel"
-    dst: "/usr/local/bin/golang-wails-panel"
+  - src: "./bin/panel"
+    dst: "/usr/local/bin/panel"
   - src: "./build/appicon.png"
-    dst: "/usr/share/icons/hicolor/128x128/apps/golang-wails-panel.png"
-  - src: "./build/linux/golang-wails-panel.desktop"
-    dst: "/usr/share/applications/golang-wails-panel.desktop"
+    dst: "/usr/share/icons/hicolor/128x128/apps/panel.png"
+  - src: "./build/linux/panel.desktop"
+    dst: "/usr/share/applications/panel.desktop"
 
 # Default dependencies for the GTK4 + WebKitGTK 6.0 stack (Ubuntu 24.04+ / Debian 13+)
 depends:

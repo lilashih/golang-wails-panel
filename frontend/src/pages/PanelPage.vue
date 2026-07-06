@@ -14,23 +14,8 @@ const { projects, loaded, error, busyKey, runningCount } = storeToRefs(projectsS
 const projectPath = ref("");
 
 function displayProjectPath(path: string) {
-  const basePath = projectPath.value.trim();
-  if (!basePath) {
-    return path;
-  }
-
-  const normalizedPath = path.replaceAll("\\", "/");
-  const normalizedBase = basePath.replaceAll("\\", "/").replace(/\/+$/, "");
-  if (normalizedPath.toLowerCase() === normalizedBase.toLowerCase()) {
-    return ".";
-  }
-
-  const prefix = `${normalizedBase}/`.toLowerCase();
-  if (!normalizedPath.toLowerCase().startsWith(prefix)) {
-    return path;
-  }
-
-  return normalizedPath.slice(normalizedBase.length + 1);
+  const segments = path.trim().replaceAll("\\", "/").split("/").filter(Boolean);
+  return segments.at(-1) || path;
 }
 
 onMounted(() => {

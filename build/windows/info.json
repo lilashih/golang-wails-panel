@@ -6,7 +6,7 @@
 		"0000": {
 			"ProductVersion": "2.0.0",
 			"CompanyName": "GBase",
-			"FileDescription": "Project control panel built with Wails",
+			"FileDescription": "Panel",
 			"LegalCopyright": "(c) 2026",
 			"ProductName": "GBase Panel",
 			"Comments": "Some Product Comments"

@@ -5,7 +5,7 @@
 !include "FileFunc.nsh"
 
 !ifndef INFO_PROJECTNAME
-    !define INFO_PROJECTNAME "golang-wails-panel"
+    !define INFO_PROJECTNAME "panel"
 !endif
 !ifndef INFO_COMPANYNAME
     !define INFO_COMPANYNAME "GBase"

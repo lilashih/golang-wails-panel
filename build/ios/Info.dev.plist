@@ -5,7 +5,7 @@
 		<key>CFBundleDisplayName</key>
 		<string>GBase Panel (Dev)</string>
 		<key>CFBundleExecutable</key>
-		<string>golang-wails-panel</string>
+		<string>panel</string>
 		<key>CFBundleGetInfoString</key>
 		<string>Some Product Comments</string>
 		<key>CFBundleIdentifier</key>

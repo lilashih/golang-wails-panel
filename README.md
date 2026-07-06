@@ -1,6 +1,6 @@
-# golang-wails-panel
+# panel
 
-`golang-wails-panel` 是一個以 Wails3、Go、Vue 3 建立的桌面管理工具，主要用途是集中管理專案、檢視應用程式日誌，並透過桌面視窗提供穩定的操作介面。
+`panel` 是一個以 Wails3、Go、Vue 3 建立的桌面管理工具，主要用途是集中管理專案、檢視應用程式日誌，並透過桌面視窗提供穩定的操作介面。
 
 本專案目前採用 Wails3 架構，後端以 `application.Service` 註冊服務，前端使用 Wails3 generated bindings 呼叫 Go 方法。
 

@@ -1,7 +1,7 @@
 [
   {
     "os": "windows",
-    "title": "golang_dev_air",
+    "title": "Golang Air 開發設定範例",
     "type": "exe",
     "key": "air",
     "start": "start /B air",
@@ -10,7 +10,7 @@
   },
   {
     "os": "linux",
-    "title": "golang_dev_air",
+    "title": "Golang Air 開發設定範例",
     "type": "exe",
     "key": "air",
     "start": "nohup ./air > ./app.log 2>&1 &",

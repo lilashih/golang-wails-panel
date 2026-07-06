@@ -1,6 +1,6 @@
-﻿# golang-wails-panel
+﻿# panel
 
-`golang-wails-panel` is a desktop management tool built with Wails3, Go, and Vue 3. Its main purpose is to centrally manage projects, view application logs, and provide a stable operating interface through a desktop window.
+`panel` is a desktop management tool built with Wails3, Go, and Vue 3. Its main purpose is to centrally manage projects, view application logs, and provide a stable operating interface through a desktop window.
 
 This project currently uses the Wails3 architecture. The backend registers services through `application.Service`, and the frontend calls Go methods through Wails3 generated bindings.
 

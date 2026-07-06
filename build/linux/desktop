@@ -3,11 +3,11 @@ Version=1.0
 Name=GBase Panel
 Comment=Project control panel built with Wails
 # The Exec line includes %u to pass the URL to the application
-Exec=/usr/local/bin/golang-wails-panel %u
+Exec=/usr/local/bin/panel %u
 Terminal=false
 Type=Application
-Icon=golang-wails-panel
+Icon=panel
 Categories=Utility;
-StartupWMClass=golang-wails-panel
+StartupWMClass=panel
 
  
