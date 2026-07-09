@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
-import { Download, FolderOpen, Play, RefreshCw, Square } from "lucide-vue-next";
+import { ChevronDown, Download, FolderOpen, Play, RefreshCw, Square, Terminal } from "lucide-vue-next";
 import { GetAppInfo } from "@bindings/gbase/src/service/app_info/service.js";
 import { useProjectsStore } from "@/stores/projects";
 import AppButton from "@/components/ui/AppButton.vue";
@@ -12,10 +12,32 @@ import StatusBadge from "@/components/ui/StatusBadge.vue";
 const projectsStore = useProjectsStore();
 const { projects, loaded, error, busyKey, runningCount } = storeToRefs(projectsStore);
 const projectPath = ref("");
+const expandedKeys = ref<Set<string>>(new Set());
 
 function displayProjectPath(path: string) {
   const segments = path.trim().replaceAll("\\", "/").split("/").filter(Boolean);
   return segments.at(-1) || path;
+}
+
+function getProjectKey(key: string, path: string) {
+  return `${key}-${path}`;
+}
+
+function isExpanded(key: string, path: string) {
+  return expandedKeys.value.has(getProjectKey(key, path));
+}
+
+function toggleProjectCommands(key: string, path: string) {
+  const next = new Set(expandedKeys.value);
+  const projectKey = getProjectKey(key, path);
+
+  if (next.has(projectKey)) {
+    next.delete(projectKey);
+  } else {
+    next.add(projectKey);
+  }
+
+  expandedKeys.value = next;
 }
 
 onMounted(() => {
@@ -58,8 +80,9 @@ onMounted(() => {
       />
 
       <div v-else class="overflow-x-auto rounded-md border border-app-border bg-app-surface">
-        <div class="min-w-[40rem]">
-          <div class="grid grid-cols-[minmax(3rem,1fr)_6rem_6rem_minmax(5rem,1fr)_10rem] border-b border-app-border bg-app-surface-muted px-4 py-2 text-xs font-semibold uppercase text-app-text-muted text-center">
+        <div class="min-w-[45rem]">
+          <div class="grid grid-cols-[3rem_minmax(3rem,1fr)_5rem_5rem_minmax(5rem,1fr)_10rem] border-b border-app-border bg-app-surface-muted px-4 py-2 text-center text-xs font-semibold uppercase text-app-text-muted">
+            <span></span>
             <span>名稱</span>
             <span>類型</span>
             <span>狀態</span>
@@ -70,44 +93,79 @@ onMounted(() => {
           <div
             v-for="project in projects"
             :key="`${project.Config.key}-${project.path}`"
-            class="grid min-h-16 grid-cols-[minmax(3rem,1fr)_6rem_6rem_minmax(5rem,1fr)_10rem] items-center border-b border-app-border-muted px-4 py-3 text-center last:border-b-0"
+            class="border-b border-app-border-muted last:border-b-0"
           >
-            <div class="min-w-0 text-left">
-              <p class="truncate text-sm font-semibold text-app-text">{{ project.Config.title }}</p>
-              <p class="mt-0.5 truncate font-mono text-xs text-app-text-muted">{{ project.Config.key }}</p>
+            <div class="grid min-h-16 grid-cols-[3rem_minmax(3rem,1fr)_5rem_5rem_minmax(5rem,1fr)_10rem] items-center px-4 py-3 text-center">
+              <div class="flex justify-start">
+                <IconButton
+                  :label="isExpanded(project.Config.key, project.path) ? '收合指令' : '展開指令'"
+                  @click="toggleProjectCommands(project.Config.key, project.path)"
+                >
+                  <ChevronDown
+                    class="h-4 w-4 transition-transform"
+                    :class="isExpanded(project.Config.key, project.path) ? 'rotate-180' : ''"
+                  />
+                </IconButton>
+              </div>
+              <div class="min-w-0 text-left">
+                <p class="truncate text-sm font-semibold text-app-text">{{ project.Config.title }}</p>
+                <p class="mt-0.5 truncate font-mono text-xs text-app-text-muted">{{ project.Config.key }}</p>
+              </div>
+              <div class="truncate text-sm text-app-text-muted">{{ project.Config.type }}</div>
+              <StatusBadge :active="project.running" />
+              <div class="truncate px-3 font-mono text-xs text-app-text-muted" :title="project.path">
+                {{ displayProjectPath(project.path) }}
+              </div>
+              <div class="flex justify-end gap-2 text-sm">
+                <AppButton
+                  v-if="!project.running"
+                  size="sm"
+                  variant="primary"
+                  :disabled="busyKey === project.Config.key"
+                  @click="projectsStore.startProject(project.Config.key)"
+                >
+                  <Play class="h-4 w-4" />
+                  啟動
+                </AppButton>
+                <AppButton
+                  v-else
+                  size="sm"
+                  variant="danger"
+                  :disabled="busyKey === project.Config.key"
+                  @click="projectsStore.stopProject(project.Config.key)"
+                >
+                  <Square class="h-4 w-4" />
+                  停止
+                </AppButton>
+                <IconButton label="重新安裝" :disabled="busyKey === project.Config.key || project.running" @click="projectsStore.installProject(project.Config.key)">
+                  <Download class="h-4 w-4" />
+                </IconButton>
+                <IconButton label="開啟資料夾" :disabled="busyKey === project.Config.key" @click="projectsStore.openProject(project.Config.key)">
+                  <FolderOpen class="h-4 w-4" />
+                </IconButton>
+              </div>
             </div>
-            <div class="truncate text-sm text-app-text-muted">{{ project.Config.type }}</div>
-            <StatusBadge :active="project.running" />
-            <div class="truncate px-3 font-mono text-xs text-app-text-muted" :title="project.path">
-              {{ displayProjectPath(project.path) }}
-            </div>
-            <div class="flex justify-end gap-2 text-sm">
-              <AppButton
-                v-if="!project.running"
-                size="sm"
-                variant="primary"
-                :disabled="busyKey === project.Config.key"
-                @click="projectsStore.startProject(project.Config.key)"
-              >
-                <Play class="h-4 w-4" />
-                啟動
-              </AppButton>
-              <AppButton
-                v-else
-                size="sm"
-                variant="danger"
-                :disabled="busyKey === project.Config.key"
-                @click="projectsStore.stopProject(project.Config.key)"
-              >
-                <Square class="h-4 w-4" />
-                停止
-              </AppButton>
-              <IconButton label="重新安裝" :disabled="busyKey === project.Config.key || project.running" @click="projectsStore.installProject(project.Config.key)">
-                <Download class="h-4 w-4" />
-              </IconButton>
-              <IconButton label="開啟資料夾" :disabled="busyKey === project.Config.key" @click="projectsStore.openProject(project.Config.key)">
-                <FolderOpen class="h-4 w-4" />
-              </IconButton>
+
+            <div v-if="isExpanded(project.Config.key, project.path)" class="border-t border-app-border-muted bg-app-surface-muted px-4 py-3">
+              <div class="space-y-2 pl-12">
+                <div
+                  v-for="command in [
+                    { label: 'Install', value: project.Config.install },
+                    { label: 'Start', value: project.Config.start },
+                    { label: 'Stop', value: project.Config.stop },
+                  ]"
+                  :key="command.label"
+                  class="grid min-w-0 grid-cols-[7rem_minmax(0,1fr)] items-start gap-3 rounded-md border border-app-border bg-app-surface px-3 py-2"
+                >
+                  <span class="flex h-5 items-center gap-2 text-xs font-semibold uppercase text-app-text-muted">
+                    <Terminal class="h-3.5 w-3.5 flex-none" />
+                    <span>{{ command.label }}</span>
+                  </span>
+                  <span class="min-w-0 break-all font-mono text-xs leading-5 text-app-text" :title="command.value">
+                    {{ command.value || "未設定" }}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

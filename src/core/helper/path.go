@@ -14,6 +14,10 @@ import (
 // 非 release 版 (go run, air)：回傳目前工作目錄，方便使用 go run 或 IDE 執行時，能以專案根目錄作為基準存取檔案。
 func GetRuntimeBasePath() (string, error) {
 	if IsRelease() {
+		if appImagePath := strings.TrimSpace(os.Getenv("APPIMAGE")); appImagePath != "" {
+			return filepath.Dir(appImagePath), nil
+		}
+
 		executablePath, err := os.Executable()
 		if err == nil {
 			return filepath.Dir(executablePath), nil

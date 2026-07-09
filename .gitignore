@@ -17,7 +17,6 @@ node_modules
 /tmp
 /.tmp
 *.exe~
-release/*.exe
 .env
 .DS_Store
 *.log
