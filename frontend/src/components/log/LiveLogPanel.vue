@@ -63,8 +63,8 @@ watch(follow, (enabled) => {
           </button>
           <button
             type="button"
-            aria-label="清除 log"
-            title="清除 log"
+            aria-label="清除"
+            title="清除"
             class="inline-flex h-7 w-7 items-center justify-center rounded text-app-text-subtle transition hover:text-app-text-inverse focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-app-primary/40"
             @click="logsStore.clearLogs()"
           >

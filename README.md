@@ -4,7 +4,7 @@
 
 本專案目前採用 Wails3 架構，後端以 `application.Service` 註冊服務，前端使用 Wails3 generated bindings 呼叫 Go 方法。
 
-## 主要功能
+## ▍主要功能
 
 ### 專案面板
 
@@ -43,7 +43,7 @@
 
 後端可透過 `logger.Info`、`logger.Warn`、`logger.Error`、`logger.Debug` 寫入檔案並同步事件到前端。前端由全域 log store 統一接收 `log` event，不在各頁面重複註冊事件。
 
-## 技術架構
+## ▍技術架構
 
 | 類別 | 技術 |
 | --- | --- |
@@ -58,7 +58,7 @@
 | 大型清單 | vue3-virtual-scroller |
 | 設定 | `.env`、`src/core/config` |
 
-## 目錄架構
+## ▍目錄架構
 
 ```text
 .
@@ -96,7 +96,7 @@
 └── release/                        # 發佈或本機執行資源
 ```
 
-## 後端架構
+## ▍後端架構
 
 ### `main.go`
 
@@ -180,7 +180,7 @@ func (s *Service) ServiceShutdown() error {
 }
 ```
 
-## 專案面板設定
+## ▍專案面板設定
 
 ### 專案目錄
 
@@ -280,7 +280,7 @@ Windows 與 Linux 共用設定範例：
 - `pm2` 的 `key` 必須與 PM2 process name 一致。
 - `exe` 的 `key` 應填可辨識的 process 名稱，不要只填顯示名稱。
 
-## 日誌系統
+## ▍日誌系統
 
 ### 日誌目錄
 
@@ -323,7 +323,7 @@ logger.Error("啟動失敗：%v", err)
 
 Wails3 framework logger 由 `logger.NewSlogLogger(slog.LevelInfo)` 接到本專案 logger，讓框架層 log 也能進入既有日誌系統。
 
-## 環境變數
+## ▍環境變數
 
 設定由 `src/core/config` 初始化，會先套用預設值，再嘗試讀取 `.env`。
 
@@ -347,7 +347,7 @@ PROJECT_BASE_PATH=C:\projects
 LOGGER_COMPRESS=false
 ```
 
-## 前端架構
+## ▍前端架構
 
 前端位於 `frontend`，使用 Vue 3、TypeScript、Vite、Pinia、Vue Router 與 Tailwind CSS 4。
 
@@ -418,9 +418,10 @@ Events.On("log", (event) => {
 
 即時 log 由 `stores/logs.ts` 保存，頁面與元件只讀取 store 狀態。
 
-## 指令
+## ▍指令
 
-## 安裝
+### 安裝
+
 安裝 `Wails3 CLI` 及整理 `Go` 相依：
 ```bash
 go install github.com/wailsapp/wails/v3/cmd/wails3@latest
@@ -437,21 +438,52 @@ wails3 dev
 
 ### 打包
 
-建置正式版本：
+#### 一般桌面 App
+只負責編譯，產生一個可執行檔。
 
 ```bash
 wails3 build
 ```
 
+#### Server Mode 版本
+打包後的檔案不建立任何原生 GUI 視窗，不需要 WebView、GTK、WebKit 等 GUI 相依套件，啟動後是一個純 HTTP Server。
+
+```bash
+wails3 task build:server
+```
+
+預設 port 是 8080，打包後可在根目錄加上 `.env` 修改。
+
+```bash
+WAILS_SERVER_HOST=0.0.0.0
+WAILS_SERVER_PORT=8000
+```
+
+#### 安裝包
+除了編譯之外，還會打包資源、套用 icon、metadata，並依不同 OS 產生以下不同檔案。
+
+| 平台      | package 產物                             |
+| ------- | -------------------------------------- |
+| Windows | `.exe` 安裝程式（也可配置 MSIX）           |
+| macOS   | `.app`、`.dmg`                            |
+| Linux   | `.AppImage`、`.deb`、`.rpm`、`.archlinux` |
+
+[1]: https://v3.wails.io/ru/guides/cli/?utm_source=chatgpt.com "CLI Reference"
+
+
+```bash
+wails3 task package
+```
+
 ### 更新建置資源
 
-若有更換主系統 icon，或修改 `build/config.yml` 內的 `info`、`fileAssociations` 等建置資源設定，打包前需執行以下指令更新 build assets：
+若有更換主系統 icon，或修改 `build/config.yml` 內的建置資源設定，打包前需執行以下指令更新 build assets：
 
 ```bash
 wails3 task common:update:build-assets
 ```
 
-## 常見問題
+## ▍常見問題
 
 ### 啟動後找不到專案
 
