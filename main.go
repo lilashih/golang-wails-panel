@@ -22,6 +22,8 @@ func init() {
 }
 
 func main() {
+	config.Initialize()
+	logger.Initialize()
 	logger.Log.Print("系統已啟動")
 
 	backend := backendapp.New()

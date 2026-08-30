@@ -10,12 +10,12 @@ import (
 
 var Log *log.Logger
 
+var defaultLogger Logger
+
 const logFilePrefix = "log-"
 
-func init() {
-	var newLogger = &Logger{}
-
-	std, err := newLogger.Init(newLogFactory)
+func Initialize() {
+	std, err := defaultLogger.Init(newLogFactory)
 	if err == nil {
 		Log = std
 		flushConfigLoadErrors()

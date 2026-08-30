@@ -11,7 +11,7 @@ build/android/overlay.json
 build/android/gen/
 frontend/.vite-dev.log
 frontend/.vite-dev.err.log
-/.gocache
+/.gocache*
 release/storage
 node_modules
 /tmp

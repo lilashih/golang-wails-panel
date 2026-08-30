@@ -33,7 +33,7 @@ type envFileOpenResult struct {
 	NotFound bool
 }
 
-func init() {
+func Initialize() {
 	envFile := ".env"
 
 	set(&configs{&App, &Project, &Logger}) // 先載入預設值

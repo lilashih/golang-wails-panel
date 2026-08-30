@@ -13,7 +13,6 @@
 ### Go 檔案命名
 
 * 使用 snake_case
-* 範例：panel_service.go
 
 ### Go 測試檔案
 
