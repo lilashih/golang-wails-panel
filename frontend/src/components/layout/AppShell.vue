@@ -1,28 +1,22 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { Candy, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen } from "lucide-vue-next";
-import { GetAppInfo } from "@bindings/gbase/src/service/app_info/service.js";
+import { useAppInfoStore } from "@/stores/app_info";
 import SidebarNav from "@/components/layout/SidebarNav.vue";
 import LiveLogPanel from "@/components/log/LiveLogPanel.vue";
 import IconButton from "@/components/ui/IconButton.vue";
 
 const route = useRoute();
+const appInfoStore = useAppInfoStore();
 const sidebarCollapsed = ref(false);
 const logPanelOpen = ref(true);
-const appTitle = ref("GBase");
-const appVersion = ref("0.0.0");
-const appMode = ref("");
+const appTitle = computed(() => appInfoStore.info.name);
+const appVersion = computed(() => appInfoStore.info.version);
+const appMode = computed(() => appInfoStore.info.mode === "release" ? "" : appInfoStore.info.mode);
 
-onMounted(async () => {
-  try {
-    const info = await GetAppInfo();
-    appTitle.value = `${info.name}`.trim();
-    appVersion.value = `${info.version}`.trim();
-    appMode.value = info.mode === 'release' ? "" : info.mode
-  } catch (err) {
-    console.error(err);
-  }
+onMounted(() => {
+  appInfoStore.loadAppInfo().catch(console.error);
 });
 </script>
 

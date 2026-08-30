@@ -468,9 +468,6 @@ WAILS_SERVER_PORT=8000
 | macOS   | `.app`、`.dmg`                            |
 | Linux   | `.AppImage`、`.deb`、`.rpm`、`.archlinux` |
 
-[1]: https://v3.wails.io/ru/guides/cli/?utm_source=chatgpt.com "CLI Reference"
-
-
 ```bash
 wails3 task package
 ```

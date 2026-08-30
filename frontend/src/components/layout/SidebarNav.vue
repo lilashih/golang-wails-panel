@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, type Component } from "vue";
+import { computed, onMounted, type Component } from "vue";
 import { RouterLink } from "vue-router";
-import { GetAppInfo } from "@bindings/gbase/src/service/app_info/service.js";
 import { routes } from "@/router/routes";
+import { useAppInfoStore } from "@/stores/app_info";
 
 const props = defineProps<{
   collapsed: boolean;
 }>();
 
-const appMode = ref("release");
+const appInfoStore = useAppInfoStore();
 
 const navItems = computed(() =>
   routes
     .filter((route) => route.meta?.isMenu)
-    .filter((route) => !route.meta?.devOnly || appMode.value !== "release")
+    .filter((route) => !route.meta?.devOnly || appInfoStore.info.mode !== "release")
     .map((route) => ({
       to: route.path,
       label: String(route.meta?.title || route.name || route.path),
@@ -21,13 +21,8 @@ const navItems = computed(() =>
     })),
 );
 
-onMounted(async () => {
-  try {
-    const info = await GetAppInfo();
-    appMode.value = `${info.mode || "release"}`.trim() || "release";
-  } catch (err) {
-    console.error(err);
-  }
+onMounted(() => {
+  appInfoStore.loadAppInfo().catch(console.error);
 });
 </script>
 

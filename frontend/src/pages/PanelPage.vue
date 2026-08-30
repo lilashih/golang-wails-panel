@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { ChevronDown, Download, FolderOpen, Play, RefreshCw, Square, Terminal } from "lucide-vue-next";
-import { GetAppInfo } from "@bindings/gbase/src/service/app_info/service.js";
+import { useAppInfoStore } from "@/stores/app_info";
 import { useProjectsStore } from "@/stores/projects";
 import AppButton from "@/components/ui/AppButton.vue";
 import EmptyState from "@/components/ui/EmptyState.vue";
@@ -10,8 +10,9 @@ import IconButton from "@/components/ui/IconButton.vue";
 import StatusBadge from "@/components/ui/StatusBadge.vue";
 
 const projectsStore = useProjectsStore();
+const appInfoStore = useAppInfoStore();
 const { projects, loaded, error, busyKey, runningCount } = storeToRefs(projectsStore);
-const projectPath = ref("");
+const projectPath = computed(() => appInfoStore.info.project_path);
 const expandedKeys = ref<Set<string>>(new Set());
 
 function displayProjectPath(path: string) {
@@ -42,11 +43,7 @@ function toggleProjectCommands(key: string, path: string) {
 
 onMounted(() => {
   projectsStore.loadProjects().catch(console.error);
-  GetAppInfo()
-    .then((info) => {
-      projectPath.value = `${info.project_path || ""}`.trim();
-    })
-    .catch(console.error);
+  appInfoStore.loadAppInfo().catch(console.error);
 });
 </script>
 
